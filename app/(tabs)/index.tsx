@@ -6,8 +6,13 @@ import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Link } from 'expo-router';
+import { useAuth } from '../../contexts/AuthContext';
+import GoogleSignInButton from '../../components/GoogleSignInButton';
+import UserProfile from '../../components/UserProfile';
 
 export default function HomeScreen() {
+  const { isSignedIn, loading } = useAuth();
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
@@ -18,8 +23,19 @@ export default function HomeScreen() {
         />
       }>
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
+        <ThemedText type="title">Welcome to Chrono!</ThemedText>
         <HelloWave />
+      </ThemedView>
+      
+      <ThemedView style={styles.authContainer}>
+        <ThemedText type="subtitle">Authentication</ThemedText>
+        {loading ? (
+          <ThemedText>Loading...</ThemedText>
+        ) : isSignedIn ? (
+          <UserProfile />
+        ) : (
+          <GoogleSignInButton />
+        )}
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
         <ThemedText type="subtitle">Step 1: Try it</ThemedText>
@@ -83,6 +99,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+  },
+  authContainer: {
+    gap: 8,
+    marginBottom: 16,
+    padding: 16,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
   },
   stepContainer: {
     gap: 8,
