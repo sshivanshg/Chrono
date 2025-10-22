@@ -1,50 +1,226 @@
-# Welcome to your Expo app 👋
+# Chrono - Time Management App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A modern time management and productivity tracking application built with React Native and Expo.
 
-## Get started
+## 🏗️ Project Structure
 
-1. Install dependencies
+```
+Chrono/
+├── app/                    # Expo Router pages
+│   ├── (tabs)/            # Tab navigation screens
+│   ├── _layout.tsx        # Root layout
+│   └── modal.tsx          # Modal screens
+├── components/            # Reusable UI components
+│   ├── ui/                # Base UI components
+│   ├── GoogleSignInButton.tsx
+│   └── UserProfile.tsx
+├── config/                # Configuration files
+│   ├── firebase.ts        # Firebase configuration
+│   └── environment.ts      # Environment settings
+├── contexts/              # React contexts
+│   └── AuthContext.tsx    # Authentication context
+├── services/              # Business logic and API services
+│   ├── api/               # API client and services
+│   │   ├── client.ts      # HTTP client
+│   │   ├── endpoints.ts   # API endpoints
+│   │   ├── tasks.ts       # Task API service
+│   │   ├── timeTracking.ts # Time tracking API service
+│   │   └── index.ts       # API exports
+│   ├── auth.ts            # Authentication service
+│   └── expoAuth.ts        # Expo AuthSession service
+├── types/                 # TypeScript type definitions
+│   └── index.ts           # Core types
+├── assets/                # Static assets
+└── hooks/                 # Custom React hooks
+```
 
+## 🚀 Frontend-Backend Separation
+
+This project is designed for independent deployment:
+
+### Frontend (This Repository)
+- **Framework**: React Native with Expo
+- **State Management**: React Context + Hooks
+- **API Communication**: RESTful API client
+- **Authentication**: Firebase Auth + Google Sign-In
+- **Deployment**: Expo Application Services (EAS)
+
+### Backend (Separate Repository)
+- **Framework**: Node.js/Express or Python/FastAPI
+- **Database**: Firebase Firestore or PostgreSQL
+- **Authentication**: JWT tokens
+- **API**: RESTful endpoints
+- **Deployment**: Vercel, Railway, or AWS
+
+## 📱 Features
+
+### Core Functionality
+- ✅ **User Authentication** - Google Sign-In integration
+- ✅ **Task Management** - Create, update, delete tasks
+- ✅ **Time Tracking** - Start/stop time entries
+- ✅ **Categories** - Organize tasks by categories
+- ✅ **Projects** - Group related tasks
+- ✅ **Pomodoro Timer** - Focus sessions with breaks
+- ✅ **Analytics** - Productivity insights and reports
+- ✅ **Goals** - Set and track productivity goals
+- ✅ **Notifications** - Reminders and alerts
+
+### Technical Features
+- 🔄 **Offline Support** - Works without internet
+- 📊 **Real-time Sync** - Live updates across devices
+- 🎨 **Dark/Light Theme** - User preference support
+- 📱 **Cross-platform** - iOS, Android, and Web
+- 🔒 **Secure** - Firebase authentication and encryption
+
+## 🛠️ Development Setup
+
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+- Expo CLI
+- Android Studio (for Android development)
+- Xcode (for iOS development)
+
+### Installation
+
+1. **Clone and install dependencies:**
    ```bash
+   git clone <repository-url>
+   cd Chrono
    npm install
    ```
 
-2. Start the app
-
+2. **Configure environment:**
    ```bash
-   npx expo start
+   # Copy environment template
+   cp config/environment.example.ts config/environment.ts
+   # Edit with your API endpoints and Firebase config
    ```
 
-In the output, you'll find options to open the app in a
+3. **Start development server:**
+   ```bash
+   npm start
+   ```
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+### Environment Configuration
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+Update `config/environment.ts` with your settings:
 
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
+```typescript
+export const development: Environment = {
+  apiBaseUrl: 'http://localhost:3000/api', // Your backend URL
+  firebase: {
+    // Your Firebase config
+  },
+  googleSignIn: {
+    webClientId: 'your-web-client-id',
+  },
+  features: {
+    analytics: true,
+    notifications: true,
+    offlineMode: true,
+  },
+};
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## 🔌 API Integration
 
-## Learn more
+The frontend communicates with your backend through a well-defined API:
 
-To learn more about developing your project with Expo, look at the following resources:
+### Authentication
+- `POST /auth/login` - User login
+- `POST /auth/logout` - User logout
+- `GET /auth/profile` - Get user profile
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+### Tasks
+- `GET /tasks` - List tasks with filters
+- `POST /tasks` - Create new task
+- `PUT /tasks/:id` - Update task
+- `DELETE /tasks/:id` - Delete task
 
-## Join the community
+### Time Tracking
+- `GET /time-entries` - List time entries
+- `POST /time-entries/start` - Start tracking
+- `POST /time-entries/stop` - Stop tracking
+- `GET /time-entries/stats` - Get statistics
 
-Join our community of developers creating universal apps.
+## 📦 Deployment
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### Frontend Deployment (EAS Build)
+```bash
+# Install EAS CLI
+npm install -g @expo/eas-cli
+
+# Configure EAS
+eas build:configure
+
+# Build for production
+eas build --platform android
+eas build --platform ios
+
+# Submit to app stores
+eas submit --platform android
+eas submit --platform ios
+```
+
+### Backend Deployment
+Deploy your backend API to your preferred platform:
+- **Vercel** - For serverless functions
+- **Railway** - For containerized apps
+- **AWS** - For scalable infrastructure
+- **Heroku** - For simple deployments
+
+## 🧪 Testing
+
+```bash
+# Run tests
+npm test
+
+# Run with coverage
+npm run test:coverage
+
+# Run E2E tests
+npm run test:e2e
+```
+
+## 📚 API Documentation
+
+The API follows RESTful conventions:
+
+### Base URL
+- Development: `http://localhost:3000/api`
+- Production: `https://your-api-domain.com/api`
+
+### Authentication
+Include JWT token in Authorization header:
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+### Response Format
+```json
+{
+  "success": true,
+  "data": { ... },
+  "message": "Operation successful"
+}
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🆘 Support
+
+For support and questions:
+- Create an issue in the repository
+- Check the documentation
+- Contact the development team
