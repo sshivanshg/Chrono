@@ -10,13 +10,14 @@ import {
   SafeAreaView,
   StatusBar
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
 import GoogleSignInButton from '../../components/GoogleSignInButton';
 import UserProfile from '../../components/UserProfile';
 import { Event } from '../../types';
 
 const { width } = Dimensions.get('window');
-const cardWidth = (width - 60) / 3; // 3 columns with padding
+const cardWidth = (width - 60) / 3; // 3 columns with 20px padding on each side
 
 // Mock data for events
 const mockEvents: Event[] = [
@@ -84,6 +85,7 @@ const mockEvents: Event[] = [
 ];
 
 export default function HomeScreen() {
+  const router = useRouter();
   const { isSignedIn, loading } = useAuth();
   const [filter, setFilter] = useState<'upcoming' | 'previous'>('upcoming');
 
@@ -149,8 +151,11 @@ export default function HomeScreen() {
         
         <Text style={styles.appTitle}>Days</Text>
         
-        <TouchableOpacity style={styles.addButton}>
-          <Text style={styles.addButtonText}>+</Text>
+        <TouchableOpacity 
+          style={styles.addButton}
+          onPress={() => router.push('/calendar')}
+        >
+          <Text style={styles.addButtonText}>📅</Text>
         </TouchableOpacity>
       </View>
 
@@ -173,9 +178,12 @@ export default function HomeScreen() {
         <View style={styles.addEventsSection}>
           <Text style={styles.addEventsTitle}>Add your events</Text>
           <Text style={styles.addEventsSubtitle}>Get started by adding your special moments</Text>
-          <TouchableOpacity style={styles.createEventButton}>
-            <Text style={styles.createEventButtonText}>Create new event</Text>
-          </TouchableOpacity>
+        <TouchableOpacity 
+          style={styles.createEventButton}
+          onPress={() => router.push('/add-date')}
+        >
+          <Text style={styles.createEventButtonText}>Create new event</Text>
+        </TouchableOpacity>
         </View>
       </ScrollView>
 
@@ -239,8 +247,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingVertical: 16,
     backgroundColor: '#ffffff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
   },
   menuButton: {
     width: 40,
@@ -281,19 +291,28 @@ const styles = StyleSheet.create({
   },
   filterContainer: {
     paddingHorizontal: 20,
-    marginBottom: 15,
+    marginBottom: 20,
+    paddingTop: 20,
   },
   filterButton: {
     backgroundColor: '#f5f5f5',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 20,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 25,
     alignSelf: 'flex-start',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
   },
   filterButtonText: {
     fontSize: 16,
     color: '#333',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   scrollView: {
     flex: 1,
@@ -303,15 +322,23 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     paddingHorizontal: 20,
     justifyContent: 'space-between',
-    marginBottom: 20,
+    marginBottom: 30,
   },
   eventCard: {
     width: cardWidth,
-    height: cardWidth * 1.2,
-    borderRadius: 12,
-    marginBottom: 15,
+    height: cardWidth * 1.3,
+    borderRadius: 16,
+    marginBottom: 20,
     overflow: 'hidden',
     position: 'relative',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   eventImage: {
     width: '100%',
@@ -323,64 +350,88 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
-    padding: 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    padding: 16,
+    borderBottomLeftRadius: 16,
+    borderBottomRightRadius: 16,
   },
   timeframeText: {
     color: '#fff',
-    fontSize: 12,
-    fontWeight: '600',
-    marginBottom: 4,
+    fontSize: 11,
+    fontWeight: '500',
+    marginBottom: 6,
+    opacity: 0.9,
   },
   eventTitle: {
     color: '#fff',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
+    lineHeight: 20,
   },
   addEventsSection: {
     paddingHorizontal: 20,
-    paddingVertical: 30,
+    paddingVertical: 40,
     alignItems: 'center',
   },
   addEventsTitle: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
     color: '#000',
-    marginBottom: 8,
+    marginBottom: 12,
   },
   addEventsSubtitle: {
-    fontSize: 16,
+    fontSize: 18,
     color: '#666',
-    marginBottom: 30,
+    marginBottom: 35,
     textAlign: 'center',
+    lineHeight: 24,
   },
   createEventButton: {
     backgroundColor: '#000',
-    paddingHorizontal: 30,
-    paddingVertical: 15,
-    borderRadius: 25,
+    paddingHorizontal: 35,
+    paddingVertical: 18,
+    borderRadius: 30,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   createEventButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: '600',
   },
   bottomFilter: {
     flexDirection: 'row',
     paddingHorizontal: 20,
-    paddingVertical: 15,
+    paddingVertical: 20,
     backgroundColor: '#f8f8f8',
+    borderTopWidth: 1,
+    borderTopColor: '#e0e0e0',
   },
   filterTab: {
     flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 20,
-    marginHorizontal: 5,
+    paddingVertical: 15,
+    paddingHorizontal: 25,
+    borderRadius: 25,
+    marginHorizontal: 8,
     alignItems: 'center',
+    backgroundColor: 'transparent',
   },
   activeFilterTab: {
     backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   filterTabText: {
     fontSize: 16,

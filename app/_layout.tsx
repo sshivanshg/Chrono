@@ -5,6 +5,7 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AuthProvider } from '../contexts/AuthContext';
+import { EventProvider } from '../contexts/EventContext';
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -15,13 +16,17 @@ export default function RootLayout() {
 
   return (
     <AuthProvider>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-        </Stack>
-        <StatusBar style="auto" />
-      </ThemeProvider>
+      <EventProvider>
+        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <Stack>
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+            <Stack.Screen name="add-date" options={{ headerShown: false }} />
+            <Stack.Screen name="calendar" options={{ headerShown: false }} />
+          </Stack>
+          <StatusBar style="auto" />
+        </ThemeProvider>
+      </EventProvider>
     </AuthProvider>
   );
 }
