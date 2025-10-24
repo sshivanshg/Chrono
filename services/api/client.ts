@@ -68,7 +68,7 @@ class ApiClient {
   }
 
   // GET request
-  async get<T>(endpoint: string, params?: Record<string, any>): Promise<ApiResponse<T>> {
+  async get<T>(endpoint: string, params?: Record<string, any>, authHeaders?: Record<string, string>): Promise<ApiResponse<T>> {
     const url = new URL(`${this.config.baseURL}${endpoint}`);
     
     if (params) {
@@ -81,14 +81,16 @@ class ApiClient {
 
     return this.request<T>(url.pathname + url.search, {
       method: 'GET',
+      headers: authHeaders,
     });
   }
 
   // POST request
-  async post<T>(endpoint: string, data?: any): Promise<ApiResponse<T>> {
+  async post<T>(endpoint: string, data?: any, authHeaders?: Record<string, string>): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
       method: 'POST',
       body: data ? JSON.stringify(data) : undefined,
+      headers: authHeaders,
     });
   }
 

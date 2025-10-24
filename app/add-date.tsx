@@ -9,12 +9,15 @@ import {
   ScrollView,
   Dimensions,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 
 const { width } = Dimensions.get('window');
 
 export default function AddDateScreen() {
   const router = useRouter();
+  const params = useLocalSearchParams();
+  const eventName = params.eventName as string || '';
+  
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [isAllDay, setIsAllDay] = useState(true);
   const [repeats, setRepeats] = useState(false);
@@ -90,12 +93,22 @@ export default function AddDateScreen() {
   }, []);
 
   const handleContinue = () => {
-    // Navigate to next step or save date
+    // Navigate to photo selection screen
+    console.log('Event Name:', eventName);
     console.log('Date selected:', selectedDate);
     console.log('All Day:', isAllDay);
     console.log('Repeats:', repeats);
-    // You can navigate to the next screen here
-    // router.push('/add-event-details');
+    
+    // Navigate to photo selection screen
+    router.push({
+      pathname: '/add-photo',
+      params: { 
+        eventName: eventName,
+        selectedDate: selectedDate.toISOString(),
+        isAllDay: isAllDay.toString(),
+        repeats: repeats.toString()
+      }
+    });
   };
 
   const handleBack = () => {
@@ -106,15 +119,8 @@ export default function AddDateScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
       
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.windowControls}>
-          <View style={[styles.controlDot, { backgroundColor: '#ff5f57' }]} />
-          <View style={[styles.controlDot, { backgroundColor: '#ffbd2e' }]} />
-          <View style={[styles.controlDot, { backgroundColor: '#28ca42' }]} />
-        </View>
-        <Text style={styles.appTitle}>Days</Text>
-      </View>
+
+      
 
       {/* Secondary Header */}
       <View style={styles.secondaryHeader}>

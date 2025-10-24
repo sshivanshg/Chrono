@@ -1,5 +1,5 @@
 // Task API service
-import apiClient from './client';
+import { apiClient } from './client';
 import { API_ENDPOINTS } from './endpoints';
 import { Task, TaskFilters, PaginatedResponse } from '../../types';
 

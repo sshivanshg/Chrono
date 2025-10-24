@@ -1,14 +1,16 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Event } from '../types';
+import { eventsApi } from '../services/api/events';
 
 interface EventContextType {
   events: Event[];
-  addEvent: (event: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>) => void;
+  addEvent: (event: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
   updateEvent: (id: string, event: Partial<Event>) => void;
   deleteEvent: (id: string) => void;
   getEventsForDate: (date: Date) => Event[];
   loading: boolean;
+  loadEvents: () => Promise<void>;
 }
 
 const EventContext = createContext<EventContextType | undefined>(undefined);
@@ -43,18 +45,30 @@ export const EventProvider: React.FC<EventProviderProps> = ({ children }) => {
 
   const loadEvents = async () => {
     try {
-      const storedEvents = await AsyncStorage.getItem('events');
-      if (storedEvents) {
-        const parsedEvents = JSON.parse(storedEvents).map((event: any) => ({
+      setLoading(true);
+      console.log('🔍 Loading events from authenticated API...');
+      
+      // Use the proper authenticated API
+      const response = await eventsApi.getEvents();
+      console.log('🔍 API response:', response);
+      
+      if (response.data && Array.isArray(response.data)) {
+        const parsedEvents = response.data.map((event: any) => ({
           ...event,
           date: new Date(event.date),
           createdAt: new Date(event.createdAt),
           updatedAt: new Date(event.updatedAt),
         }));
+        console.log('🔍 Loaded events from API:', parsedEvents);
         setEvents(parsedEvents);
+      } else {
+        console.log('🔍 No events found, using empty array');
+        setEvents([]);
       }
     } catch (error) {
       console.error('Error loading events:', error);
+      // Fallback to empty array if API fails
+      setEvents([]);
     } finally {
       setLoading(false);
     }
@@ -68,14 +82,23 @@ export const EventProvider: React.FC<EventProviderProps> = ({ children }) => {
     }
   };
 
-  const addEvent = (eventData: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>) => {
-    const newEvent: Event = {
-      ...eventData,
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    setEvents(prev => [...prev, newEvent]);
+  const addEvent = async (eventData: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>) => {
+    try {
+      console.log('🔍 Adding event via authenticated API:', eventData);
+      
+      // Use the proper authenticated API
+      const newEvent = await eventsApi.createEvent(eventData);
+      console.log('🔍 Event created successfully:', newEvent);
+      
+      setEvents(prev => {
+        const updated = [...prev, newEvent];
+        console.log('🔍 Events after add:', updated);
+        return updated;
+      });
+    } catch (error) {
+      console.error('Error creating event:', error);
+      throw error;
+    }
   };
 
   const updateEvent = (id: string, eventData: Partial<Event>) => {
@@ -106,6 +129,7 @@ export const EventProvider: React.FC<EventProviderProps> = ({ children }) => {
     deleteEvent,
     getEventsForDate,
     loading,
+    loadEvents,
   };
 
   return (

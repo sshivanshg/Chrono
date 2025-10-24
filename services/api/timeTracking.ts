@@ -1,5 +1,5 @@
 // Time Tracking API service
-import apiClient from './client';
+import { apiClient } from './client';
 import { API_ENDPOINTS } from './endpoints';
 import { TimeEntry, TimeEntryFilters, PaginatedResponse } from '../../types';
 

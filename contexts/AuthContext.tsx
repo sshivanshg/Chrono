@@ -1,19 +1,8 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { User, onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../config/firebase';
-import ExpoAuthService from '../services/expoAuth';
-
-// Import AuthUser interface from the original auth service
-export interface AuthUser {
-  uid: string;
-  email: string | null;
-  displayName: string | null;
-  photoURL: string | null;
-}
+import AuthService, { AuthUser } from '../services/authService';
 
 interface AuthContextType {
-  user: User | null;
-  authUser: AuthUser | null;
+  user: AuthUser | null;
   loading: boolean;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -27,36 +16,38 @@ interface AuthProviderProps {
 }
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Listen for auth state changes
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-      
-      if (user) {
-        setAuthUser({
-          uid: user.uid,
-          email: user.email,
-          displayName: user.displayName,
-          photoURL: user.photoURL,
-        });
-      } else {
-        setAuthUser(null);
+    // Check if user is already authenticated
+    const checkAuthStatus = async () => {
+      try {
+        setLoading(true);
+        const isAuthenticated = await AuthService.isAuthenticated();
+        
+        if (isAuthenticated) {
+          const currentUser = await AuthService.getCurrentUser();
+          setUser(currentUser);
+        } else {
+          setUser(null);
+        }
+      } catch (error) {
+        console.error('Error checking auth status:', error);
+        setUser(null);
+      } finally {
+        setLoading(false);
       }
-      
-      setLoading(false);
-    });
+    };
 
-    return () => unsubscribe();
+    checkAuthStatus();
   }, []);
 
   const signInWithGoogle = async () => {
     try {
       setLoading(true);
-      await ExpoAuthService.signInWithGoogle();
+      const user = await AuthService.signInWithGoogle();
+      setUser(user);
     } catch (error) {
       console.error('Sign in error:', error);
       throw error;
@@ -68,7 +59,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signOut = async () => {
     try {
       setLoading(true);
-      await ExpoAuthService.signOut();
+      await AuthService.signOut();
+      setUser(null);
     } catch (error) {
       console.error('Sign out error:', error);
       throw error;
@@ -79,7 +71,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const value: AuthContextType = {
     user,
-    authUser,
     loading,
     signInWithGoogle,
     signOut,

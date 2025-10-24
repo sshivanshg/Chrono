@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -12,89 +12,61 @@ import {
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../contexts/AuthContext';
-import GoogleSignInButton from '../../components/GoogleSignInButton';
-import UserProfile from '../../components/UserProfile';
+import { useEvents } from '../../contexts/EventContext';
 import { Event } from '../../types';
 
 const { width } = Dimensions.get('window');
 const cardWidth = (width - 60) / 3; // 3 columns with 20px padding on each side
 
-// Mock data for events
-const mockEvents: Event[] = [
-  {
-    id: '1',
-    userId: 'user1',
-    title: "Kate's Party",
-    date: new Date(Date.now() + 28 * 24 * 60 * 60 * 1000), // 28 days from now
-    isAllDay: true,
-    imageUrl: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=300&h=200&fit=crop',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: '2',
-    userId: 'user1',
-    title: "Basketball",
-    date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
-    isAllDay: true,
-    imageUrl: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=300&h=200&fit=crop',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: '3',
-    userId: 'user1',
-    title: "Moving House",
-    date: new Date(Date.now() + 16 * 7 * 24 * 60 * 60 * 1000), // 16 weeks from now
-    isAllDay: true,
-    imageUrl: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=300&h=200&fit=crop',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: '4',
-    userId: 'user1',
-    title: "Anniversary",
-    date: new Date(Date.now() + 24 * 60 * 60 * 1000), // Tomorrow
-    isAllDay: true,
-    imageUrl: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=300&h=200&fit=crop',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: '5',
-    userId: 'user1',
-    title: "Workout",
-    date: new Date(Date.now() + 3 * 60 * 60 * 1000), // 3 hours from now
-    isAllDay: false,
-    startTime: '18:00',
-    imageUrl: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=300&h=200&fit=crop',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  },
-  {
-    id: '6',
-    userId: 'user1',
-    title: "Pool Party",
-    date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 1 month from now
-    isAllDay: true,
-    imageUrl: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=300&h=200&fit=crop',
-    createdAt: new Date(),
-    updatedAt: new Date()
-  }
-];
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { isSignedIn, loading } = useAuth();
+  const { isSignedIn, loading: authLoading } = useAuth();
+  const { events, loading: eventsLoading, loadEvents } = useEvents();
   const [filter, setFilter] = useState<'upcoming' | 'previous'>('upcoming');
+  const [currentDate] = useState(new Date());
+
+  // The event context will automatically handle loading events when they change
+
+  // Load events when component mounts
+  useEffect(() => {
+    console.log('🏠 Home Screen - Loading events on mount...');
+    loadEvents();
+  }, []);
+
+  // Debug: Log events when they change
+  useEffect(() => {
+    console.log('🏠 Home Screen - Events updated:', events.length, events);
+    console.log('🏠 Home Screen - Events loading:', eventsLoading);
+    if (events.length > 0 && events[0]) {
+      console.log('🏠 Home Screen - First event details:', {
+        title: events[0].title,
+        imageUrl: events[0].imageUrl || 'No image',
+        date: events[0].date
+      });
+    } else {
+      console.log('🏠 Home Screen - No events found, showing mock events');
+    }
+  }, [events, eventsLoading]);
+
+  // Show loading state
+  if (eventsLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Loading events...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   const getTimeframe = (date: Date): string => {
     const now = new Date();
     const diffTime = date.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
-    if (diffDays < 0) return 'PAST';
+    if (diffDays < 0) return `${Math.abs(diffDays)} DAYS AGO`;
     if (diffDays === 0) return 'TODAY';
     if (diffDays === 1) return 'TOMORROW';
     if (diffDays < 7) return `IN ${diffDays} DAYS`;
@@ -103,15 +75,46 @@ export default function HomeScreen() {
     return `IN ${Math.ceil(diffDays / 365)} YEARS`;
   };
 
-  const EventCard = ({ event }: { event: Event }) => (
-    <TouchableOpacity style={styles.eventCard}>
-      <Image source={{ uri: event.imageUrl }} style={styles.eventImage} />
-      <View style={styles.eventOverlay}>
-        <Text style={styles.timeframeText}>{getTimeframe(event.date)}</Text>
-        <Text style={styles.eventTitle}>{event.title}</Text>
-      </View>
-    </TouchableOpacity>
-  );
+  // Filter events based on current date and selected filter
+  const getFilteredEvents = () => {
+    if (!events || events.length === 0) return [];
+    
+    return events.filter(event => {
+      if (!event || !event.date) return false;
+      
+      const eventDate = new Date(event.date);
+      const now = new Date();
+      const isUpcoming = eventDate > now;
+      const isPrevious = eventDate <= now;
+      
+      if (filter === 'upcoming') return isUpcoming;
+      if (filter === 'previous') return isPrevious;
+      
+      return true;
+    });
+  };
+
+  const EventCard = ({ event }: { event: Event }) => {
+    if (!event) {
+      return null; // Don't render if event is undefined
+    }
+
+  return (
+      <TouchableOpacity 
+        style={styles.eventCard}
+        onPress={() => router.push(`/event-detail?eventId=${event.id}`)}
+      >
+        <Image
+          source={{ uri: event.imageUrl || 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=300&h=200&fit=crop' }} 
+          style={styles.eventImage} 
+        />
+        <View style={styles.eventOverlay}>
+          <Text style={styles.timeframeText}>{getTimeframe(event.date)}</Text>
+          <Text style={styles.eventTitle}>{event.title}</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   // Skip authentication for now - show main interface directly
   // if (loading) {
@@ -124,17 +127,6 @@ export default function HomeScreen() {
   //   );
   // }
 
-  // if (!isSignedIn) {
-  //   return (
-  //     <SafeAreaView style={styles.container}>
-  //       <View style={styles.authContainer}>
-  //         <Text style={styles.authTitle}>Welcome to Days</Text>
-  //         <Text style={styles.authSubtitle}>Sign in to manage your events</Text>
-  //         <GoogleSignInButton />
-  //       </View>
-  //     </SafeAreaView>
-  //   );
-  // }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -153,7 +145,7 @@ export default function HomeScreen() {
         
         <TouchableOpacity 
           style={styles.addButton}
-          onPress={() => router.push('/calendar')}
+          onPress={() => router.push('/add-event')}
         >
           <Text style={styles.addButtonText}>📅</Text>
         </TouchableOpacity>
@@ -166,25 +158,165 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Events Grid */}
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <View style={styles.eventsGrid}>
-          {mockEvents.map((event) => (
-            <EventCard key={event.id} event={event} />
-          ))}
-        </View>
-
-        {/* Add Events Section */}
-        <View style={styles.addEventsSection}>
-          <Text style={styles.addEventsTitle}>Add your events</Text>
-          <Text style={styles.addEventsSubtitle}>Get started by adding your special moments</Text>
+      {/* Debug Info */}
+      <View style={styles.debugContainer}>
+        <Text style={styles.debugText}>Events Count: {events.length}</Text>
+        <Text style={styles.debugText}>Loading: {eventsLoading ? 'Yes' : 'No'}</Text>
+        <Text style={styles.debugText}>First Event: {events[0]?.title || 'None'}</Text>
         <TouchableOpacity 
-          style={styles.createEventButton}
-          onPress={() => router.push('/add-date')}
+          style={styles.refreshButton} 
+          onPress={() => {
+            console.log('🔄 Manual refresh triggered');
+            loadEvents();
+          }}
         >
-          <Text style={styles.createEventButtonText}>Create new event</Text>
+          <Text style={styles.refreshButtonText}>Refresh Events</Text>
         </TouchableOpacity>
-        </View>
+      </View>
+
+      {/* Main Content */}
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {(() => {
+          const filteredEvents = getFilteredEvents();
+          
+          // If user has ANY real events (not just filtered ones)
+          if (events.length > 0) {
+            if (filteredEvents.length > 0) {
+              // Show user's real events (filtered by Previous/Upcoming)
+              return (
+                <View>
+                  {filteredEvents.length === 1 ? (
+                    // Show main event card for single event
+                    <TouchableOpacity 
+                      style={styles.mainEventCard}
+                      onPress={() => router.push(`/event-detail?eventId=${filteredEvents[0].id}`)}
+                    >
+                      <Image 
+                        source={{ uri: filteredEvents[0].imageUrl || 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=300&h=200&fit=crop' }} 
+                        style={styles.mainEventImage} 
+                      />
+                      <View style={styles.mainEventOverlay}>
+                        <Text style={styles.mainEventTimeframe}>{getTimeframe(filteredEvents[0].date)}</Text>
+                        <Text style={styles.mainEventTitle}>{filteredEvents[0].title}</Text>
+                      </View>
+                    </TouchableOpacity>
+                  ) : (
+                    // Show events grid for multiple events
+                    <View style={styles.eventsGrid}>
+                      {filteredEvents.map((event) => (
+                        <EventCard key={event.id} event={event} />
+                      ))}
+                    </View>
+                  )}
+                </View>
+              );
+            } else {
+              // User has events but none match the current filter
+              return (
+                <View style={styles.noEventsContainer}>
+                  <Text style={styles.noEventsText}>
+                    No {filter === 'upcoming' ? 'upcoming' : 'previous'} events found
+                  </Text>
+                  <Text style={styles.noEventsSubtext}>
+                    Try switching to {filter === 'upcoming' ? 'Previous' : 'Upcoming'} events
+                  </Text>
+                </View>
+              );
+            }
+          }
+          
+          // Show mock events ONLY when user has NO real events at all
+          return (
+            <View>
+            {/* Mock Events Grid */}
+            <View style={styles.eventsGrid}>
+              {/* Mock Event 1 */}
+              <TouchableOpacity 
+                style={styles.eventCard}
+                onPress={() => router.push('/event-detail?eventId=mock-1')}
+              >
+                <Image source={{ uri: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=300&h=200&fit=crop' }} style={styles.eventImage} />
+                <View style={styles.eventOverlay}>
+                  <Text style={styles.timeframeText}>IN 28 DAYS</Text>
+                  <Text style={styles.eventTitle}>Kate's Party</Text>
+                </View>
+              </TouchableOpacity>
+
+              {/* Mock Event 2 */}
+              <TouchableOpacity 
+                style={styles.eventCard}
+                onPress={() => router.push('/event-detail?eventId=mock-2')}
+              >
+                <Image source={{ uri: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=300&h=200&fit=crop' }} style={styles.eventImage} />
+                <View style={styles.eventOverlay}>
+                  <Text style={styles.timeframeText}>IN 3 DAYS</Text>
+                  <Text style={styles.eventTitle}>Basketball</Text>
+                </View>
+              </TouchableOpacity>
+
+              {/* Mock Event 3 */}
+              <TouchableOpacity 
+                style={styles.eventCard}
+                onPress={() => router.push('/event-detail?eventId=mock-3')}
+              >
+                <Image source={{ uri: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=300&h=200&fit=crop' }} style={styles.eventImage} />
+                <View style={styles.eventOverlay}>
+                  <Text style={styles.timeframeText}>IN 16 WEEKS</Text>
+                  <Text style={styles.eventTitle}>Moving House</Text>
+                </View>
+              </TouchableOpacity>
+
+              {/* Mock Event 4 */}
+              <TouchableOpacity 
+                style={styles.eventCard}
+                onPress={() => router.push('/event-detail?eventId=mock-4')}
+              >
+                <Image source={{ uri: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=300&h=200&fit=crop' }} style={styles.eventImage} />
+                <View style={styles.eventOverlay}>
+                  <Text style={styles.timeframeText}>TOMORROW</Text>
+                  <Text style={styles.eventTitle}>Anniversary</Text>
+                </View>
+              </TouchableOpacity>
+
+              {/* Mock Event 5 */}
+              <TouchableOpacity 
+                style={styles.eventCard}
+                onPress={() => router.push('/event-detail?eventId=mock-5')}
+              >
+                <Image source={{ uri: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=300&h=200&fit=crop' }} style={styles.eventImage} />
+                <View style={styles.eventOverlay}>
+                  <Text style={styles.timeframeText}>IN 3 HOURS</Text>
+                  <Text style={styles.eventTitle}>Workout</Text>
+                </View>
+              </TouchableOpacity>
+
+              {/* Mock Event 6 */}
+              <TouchableOpacity 
+                style={styles.eventCard}
+                onPress={() => router.push('/event-detail?eventId=mock-6')}
+              >
+                <Image source={{ uri: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=300&h=200&fit=crop' }} style={styles.eventImage} />
+                <View style={styles.eventOverlay}>
+                  <Text style={styles.timeframeText}>IN 1 MONTH</Text>
+                  <Text style={styles.eventTitle}>Pool Party</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+
+            {/* Add Events Section */}
+            <View style={styles.addEventsSection}>
+              <Text style={styles.addEventsTitle}>Add your events</Text>
+              <Text style={styles.addEventsSubtitle}>Get started by adding your special moments</Text>
+              <TouchableOpacity 
+                style={styles.createEventButton}
+                onPress={() => router.push('/add-event')}
+              >
+                <Text style={styles.createEventButtonText}>Create new event</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+          );
+        })()}
       </ScrollView>
 
       {/* Bottom Filter */}
@@ -223,24 +355,6 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 16,
     color: '#666',
-  },
-  authContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-  authTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#000',
-  },
-  authSubtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 30,
-    textAlign: 'center',
   },
   header: {
     flexDirection: 'row',
@@ -314,6 +428,23 @@ const styles = StyleSheet.create({
     color: '#333',
     fontWeight: '600',
   },
+  noEventsContainer: {
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  noEventsText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  noEventsSubtext: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+  },
   scrollView: {
     flex: 1,
   },
@@ -323,6 +454,47 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     justifyContent: 'space-between',
     marginBottom: 30,
+  },
+  mainEventCard: {
+    marginHorizontal: 20,
+    marginVertical: 20,
+    borderRadius: 16,
+    overflow: 'hidden',
+    height: 400,
+    position: 'relative',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  mainEventImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+  },
+  mainEventOverlay: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  mainEventTimeframe: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  mainEventTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   eventCard: {
     width: cardWidth,
@@ -440,6 +612,29 @@ const styles = StyleSheet.create({
   },
   activeFilterTabText: {
     color: '#333',
+    fontWeight: '600',
+  },
+  debugContainer: {
+    backgroundColor: '#f0f0f0',
+    padding: 10,
+    margin: 10,
+    borderRadius: 8,
+  },
+  debugText: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 10,
+  },
+  refreshButton: {
+    backgroundColor: '#007AFF',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 6,
+    marginTop: 10,
+  },
+  refreshButtonText: {
+    color: '#fff',
+    fontSize: 12,
     fontWeight: '600',
   },
 });
