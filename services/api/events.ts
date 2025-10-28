@@ -10,7 +10,7 @@ export const eventsApi = {
     const authHeader = await AuthService.getAuthHeader();
     
     // Use proper authenticated endpoint
-    const response = await apiClient.get(API_ENDPOINTS.EVENTS.LIST, filters, authHeader);
+    const response = await apiClient.get(API_ENDPOINTS.EVENTS.BASE, filters, authHeader);
     return response.data;
   },
 
@@ -26,7 +26,7 @@ export const eventsApi = {
     const authHeader = await AuthService.getAuthHeader();
     
     // Use proper authenticated endpoint
-    const response = await apiClient.post(API_ENDPOINTS.EVENTS.LIST, eventData, authHeader);
+    const response = await apiClient.post(API_ENDPOINTS.EVENTS.BASE, eventData, authHeader);
     return response.data;
   },
 

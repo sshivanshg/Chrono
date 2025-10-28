@@ -134,20 +134,39 @@ export default function HomeScreen() {
       
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.menuButton}>
+        <TouchableOpacity 
+          style={styles.menuButton}
+          onPress={() => router.push('/settings')}
+        >
           <View style={styles.hamburgerIcon}>
             <View style={styles.hamburgerLine} />
             <View style={styles.hamburgerLine} />
           </View>
         </TouchableOpacity>
         
-        <Text style={styles.appTitle}>Days</Text>
+        <Text style={styles.appTitle}>Chrono</Text>
         
         <TouchableOpacity 
           style={styles.addButton}
           onPress={() => router.push('/add-event')}
         >
           <Text style={styles.addButtonText}>📅</Text>
+        </TouchableOpacity>
+        
+        {/* Debug: Force Sign Out Button */}
+        <TouchableOpacity 
+          style={styles.debugSignOutButton}
+          onPress={async () => {
+            try {
+              const { signOut } = useAuth();
+              await signOut();
+              router.replace('/signin');
+            } catch (error) {
+              console.error('Debug sign out error:', error);
+            }
+          }}
+        >
+          <Text style={styles.debugSignOutText}>🚪</Text>
         </TouchableOpacity>
       </View>
 
@@ -636,5 +655,22 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 12,
     fontWeight: '600',
+  },
+  debugSignOutButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: '#ff4444',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  debugSignOutText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
 });

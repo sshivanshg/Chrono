@@ -24,6 +24,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const checkAuthStatus = async () => {
       try {
         setLoading(true);
+        
+        // Normal authentication check
+        
         const isAuthenticated = await AuthService.isAuthenticated();
         
         if (isAuthenticated) {
@@ -58,14 +61,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const signOut = async () => {
     try {
+      console.log('🚪 AuthContext: Starting sign out...');
       setLoading(true);
       await AuthService.signOut();
+      console.log('🚪 AuthContext: AuthService signOut completed, clearing user state...');
       setUser(null);
+      console.log('🚪 AuthContext: User state cleared');
     } catch (error) {
-      console.error('Sign out error:', error);
+      console.error('🚪 AuthContext: Sign out error:', error);
       throw error;
     } finally {
       setLoading(false);
+      console.log('🚪 AuthContext: Sign out process completed');
     }
   };
 

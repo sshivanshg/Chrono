@@ -30,7 +30,7 @@ export default function SignInScreen() {
       
       <View style={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.title}>Welcome to Days</Text>
+          <Text style={styles.title}>Welcome to Chrono</Text>
           <Text style={styles.subtitle}>Sign in to manage your events</Text>
         </View>
         

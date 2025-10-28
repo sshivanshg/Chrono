@@ -52,7 +52,7 @@ export const EventProvider: React.FC<EventProviderProps> = ({ children }) => {
       const response = await eventsApi.getEvents();
       console.log('🔍 API response:', response);
       
-      if (response.data && Array.isArray(response.data)) {
+      if (response && response.data && Array.isArray(response.data)) {
         const parsedEvents = response.data.map((event: any) => ({
           ...event,
           date: new Date(event.date),
