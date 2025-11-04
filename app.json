@@ -27,7 +27,6 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-dev-client",
       "expo-router",
       [
         "expo-splash-screen",
@@ -46,7 +45,8 @@
         {
           "iosUrlScheme": "com.googleusercontent.apps.941489768691-la2n0nd4d4g676i7sdrjdnucn0bao9t8"
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
