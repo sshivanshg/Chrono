@@ -1,13 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Event } from '../types';
-import { eventsApi } from '../services/api/events';
 
 interface EventContextType {
   events: Event[];
   addEvent: (event: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
-  updateEvent: (id: string, event: Partial<Event>) => void;
-  deleteEvent: (id: string) => void;
+  updateEvent: (id: string, event: Partial<Event>) => Promise<void>;
+  deleteEvent: (id: string) => Promise<void>;
   getEventsForDate: (date: Date) => Event[];
   loading: boolean;
   loadEvents: () => Promise<void>;
@@ -26,6 +25,8 @@ export const useEvents = () => {
 interface EventProviderProps {
   children: React.ReactNode;
 }
+
+const EVENTS_STORAGE_KEY = 'chrono_events';
 
 export const EventProvider: React.FC<EventProviderProps> = ({ children }) => {
   const [events, setEvents] = useState<Event[]>([]);
@@ -46,28 +47,21 @@ export const EventProvider: React.FC<EventProviderProps> = ({ children }) => {
   const loadEvents = async () => {
     try {
       setLoading(true);
-      console.log('🔍 Loading events from authenticated API...');
+      const eventsJson = await AsyncStorage.getItem(EVENTS_STORAGE_KEY);
       
-      // Use the proper authenticated API
-      const response = await eventsApi.getEvents();
-      console.log('🔍 API response:', response);
-      
-      if (response && response.data && Array.isArray(response.data)) {
-        const parsedEvents = response.data.map((event: any) => ({
+      if (eventsJson) {
+        const parsedEvents = JSON.parse(eventsJson).map((event: any) => ({
           ...event,
           date: new Date(event.date),
           createdAt: new Date(event.createdAt),
           updatedAt: new Date(event.updatedAt),
         }));
-        console.log('🔍 Loaded events from API:', parsedEvents);
         setEvents(parsedEvents);
       } else {
-        console.log('🔍 No events found, using empty array');
         setEvents([]);
       }
     } catch (error) {
       console.error('Error loading events:', error);
-      // Fallback to empty array if API fails
       setEvents([]);
     } finally {
       setLoading(false);
@@ -76,7 +70,7 @@ export const EventProvider: React.FC<EventProviderProps> = ({ children }) => {
 
   const saveEvents = async () => {
     try {
-      await AsyncStorage.setItem('events', JSON.stringify(events));
+      await AsyncStorage.setItem(EVENTS_STORAGE_KEY, JSON.stringify(events));
     } catch (error) {
       console.error('Error saving events:', error);
     }
@@ -84,35 +78,43 @@ export const EventProvider: React.FC<EventProviderProps> = ({ children }) => {
 
   const addEvent = async (eventData: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>) => {
     try {
-      console.log('🔍 Adding event via authenticated API:', eventData);
+      const newEvent: Event = {
+        ...eventData,
+        id: `event_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        userId: 'local_user', // Local user ID since we're not using backend
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
       
-      // Use the proper authenticated API
-      const newEvent = await eventsApi.createEvent(eventData);
-      console.log('🔍 Event created successfully:', newEvent);
-      
-      setEvents(prev => {
-        const updated = [...prev, newEvent];
-        console.log('🔍 Events after add:', updated);
-        return updated;
-      });
+      setEvents(prev => [...prev, newEvent]);
     } catch (error) {
       console.error('Error creating event:', error);
       throw error;
     }
   };
 
-  const updateEvent = (id: string, eventData: Partial<Event>) => {
-    setEvents(prev => 
-      prev.map(event => 
-        event.id === id 
-          ? { ...event, ...eventData, updatedAt: new Date() }
-          : event
-      )
-    );
+  const updateEvent = async (id: string, eventData: Partial<Event>) => {
+    try {
+      setEvents(prev => 
+        prev.map(event => 
+          event.id === id 
+            ? { ...event, ...eventData, updatedAt: new Date() }
+            : event
+        )
+      );
+    } catch (error) {
+      console.error('Error updating event:', error);
+      throw error;
+    }
   };
 
-  const deleteEvent = (id: string) => {
-    setEvents(prev => prev.filter(event => event.id !== id));
+  const deleteEvent = async (id: string) => {
+    try {
+      setEvents(prev => prev.filter(event => event.id !== id));
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      throw error;
+    }
   };
 
   const getEventsForDate = (date: Date) => {

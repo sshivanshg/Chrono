@@ -48,8 +48,6 @@ export default function EventPreviewScreen() {
     
     try {
       setIsCreating(true);
-      console.log('DEBUG: selectedImage value:', selectedImage);
-      console.log('DEBUG: selectedImage type:', typeof selectedImage);
       
       // Create the event using the context
       await addEvent({
@@ -63,17 +61,6 @@ export default function EventPreviewScreen() {
         location: undefined,
         imageUrl: selectedImage,
       });
-      
-      console.log('Event created:', {
-        title: eventTitle,
-        date: selectedDate,
-        image: selectedImage,
-        isAllDay,
-        repeats
-      });
-      
-      // Event created successfully - show success state
-      console.log('Event created successfully!');
       
       // Refresh events list to get the latest data
       await loadEvents();

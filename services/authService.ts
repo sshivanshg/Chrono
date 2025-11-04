@@ -1,8 +1,8 @@
 import * as AuthSession from 'expo-auth-session';
 import * as WebBrowser from 'expo-web-browser';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { apiClient } from './api/client';
 import { environment } from '../config/environment';
+import { jwtDecode } from 'jwt-decode';
 
 // Complete the auth session loop - this is crucial for handling redirects
 WebBrowser.maybeCompleteAuthSession();
@@ -14,18 +14,11 @@ export interface AuthUser {
   photoURL: string | null;
 }
 
-export interface AuthResponse {
-  success: boolean;
-  user?: AuthUser;
-  token?: string;
-  message?: string;
-}
-
 class AuthService {
-  private readonly TOKEN_KEY = 'auth_token';
   private readonly USER_KEY = 'auth_user';
+  private readonly ID_TOKEN_KEY = 'google_id_token';
 
-  // Sign in with Google using backend authentication
+  // Sign in with Google (local only, no backend)
   async signInWithGoogle(): Promise<AuthUser> {
     try {
       // Google OAuth configuration
@@ -61,7 +54,7 @@ class AuthService {
         
         if (!code) throw new Error('No authorization code received');
 
-        // Exchange authorization code for tokens via proxy (no client secret on device)
+        // Exchange authorization code for tokens
         const tokenResponse = await AuthSession.exchangeCodeAsync(
           {
             code,
@@ -74,28 +67,21 @@ class AuthService {
 
         if (!tokenResponse.idToken) throw new Error('No ID token received from Google');
 
-        // Send the ID token to backend for verification and user creation
-        const backendUrl = `${environment.apiBaseUrl}/auth/google`;
-        const response = await fetch(backendUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ idToken: tokenResponse.idToken }),
-        });
+        // Decode ID token to get user info (no backend needed)
+        const decodedToken: any = jwtDecode(tokenResponse.idToken);
+        
+        const user: AuthUser = {
+          uid: decodedToken.sub || decodedToken.user_id || `google_${Date.now()}`,
+          email: decodedToken.email || null,
+          displayName: decodedToken.name || decodedToken.given_name || null,
+          photoURL: decodedToken.picture || null,
+        };
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Backend error: ${response.status} - ${errorText}`);
-        }
+        // Store user data and ID token locally
+        await AsyncStorage.setItem(this.USER_KEY, JSON.stringify(user));
+        await AsyncStorage.setItem(this.ID_TOKEN_KEY, tokenResponse.idToken);
 
-        const authResponse: AuthResponse = await response.json();
-        if (!authResponse.success || !authResponse.user || !authResponse.token) {
-          throw new Error(authResponse.message || 'Authentication failed');
-        }
-
-        await AsyncStorage.setItem(this.TOKEN_KEY, authResponse.token);
-        await AsyncStorage.setItem(this.USER_KEY, JSON.stringify(authResponse.user));
-
-        return authResponse.user;
+        return user;
       } else if (result.type === 'cancel') {
         throw new Error('Authentication was cancelled');
       } else if (result.type === 'error') {
@@ -104,6 +90,7 @@ class AuthService {
         throw new Error('Authentication was cancelled or failed');
       }
     } catch (error: any) {
+      console.error('❌ Google sign-in error:', error);
       throw new Error(error.message || 'Failed to sign in with Google');
     }
   }
@@ -119,22 +106,11 @@ class AuthService {
     }
   }
 
-  // Get stored token
-  async getToken(): Promise<string | null> {
-    try {
-      return await AsyncStorage.getItem(this.TOKEN_KEY);
-    } catch (error) {
-      console.error('Error getting token:', error);
-      return null;
-    }
-  }
-
   // Check if user is authenticated
   async isAuthenticated(): Promise<boolean> {
     try {
-      const token = await this.getToken();
       const user = await this.getCurrentUser();
-      return !!(token && user);
+      return !!user;
     } catch (error) {
       console.error('Error checking authentication:', error);
       return false;
@@ -144,36 +120,20 @@ class AuthService {
   // Sign out
   async signOut(): Promise<void> {
     try {
-      const token = await this.getToken();
-      
-      // Notify backend about sign out (optional)
-      if (token) {
-        try {
-          await fetch(`${environment.apiBaseUrl}/auth/signout`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-          });
-        } catch (error) {
-          // non-blocking
-        }
-      }
-
       // Clear local storage
-      await AsyncStorage.removeItem(this.TOKEN_KEY);
       await AsyncStorage.removeItem(this.USER_KEY);
+      await AsyncStorage.removeItem(this.ID_TOKEN_KEY);
     } catch (error) {
+      console.error('Error during sign out:', error);
       throw error;
     }
   }
 
-  // Get authorization header for API requests
+  // Get authorization header (for future backend integration)
   async getAuthHeader(): Promise<{ Authorization: string } | {}> {
     try {
-      const token = await this.getToken();
-      return token ? { Authorization: `Bearer ${token}` } : {};
+      const idToken = await AsyncStorage.getItem(this.ID_TOKEN_KEY);
+      return idToken ? { Authorization: `Bearer ${idToken}` } : {};
     } catch (error) {
       console.error('Error getting auth header:', error);
       return {};

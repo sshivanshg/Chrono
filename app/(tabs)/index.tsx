@@ -30,24 +30,8 @@ export default function HomeScreen() {
 
   // Load events when component mounts
   useEffect(() => {
-    console.log('🏠 Home Screen - Loading events on mount...');
     loadEvents();
   }, []);
-
-  // Debug: Log events when they change
-  useEffect(() => {
-    console.log('🏠 Home Screen - Events updated:', events.length, events);
-    console.log('🏠 Home Screen - Events loading:', eventsLoading);
-    if (events.length > 0 && events[0]) {
-      console.log('🏠 Home Screen - First event details:', {
-        title: events[0].title,
-        imageUrl: events[0].imageUrl || 'No image',
-        date: events[0].date
-      });
-    } else {
-      console.log('🏠 Home Screen - No events found, showing mock events');
-    }
-  }, [events, eventsLoading]);
 
   // Show loading state
   if (eventsLoading) {
@@ -152,44 +136,12 @@ export default function HomeScreen() {
         >
           <Text style={styles.addButtonText}>📅</Text>
         </TouchableOpacity>
-        
-        {/* Debug: Force Sign Out Button */}
-        <TouchableOpacity 
-          style={styles.debugSignOutButton}
-          onPress={async () => {
-            try {
-              const { signOut } = useAuth();
-              await signOut();
-              router.replace('/signin');
-            } catch (error) {
-              console.error('Debug sign out error:', error);
-            }
-          }}
-        >
-          <Text style={styles.debugSignOutText}>🚪</Text>
-        </TouchableOpacity>
       </View>
 
       {/* Filter Button */}
       <View style={styles.filterContainer}>
         <TouchableOpacity style={styles.filterButton}>
           <Text style={styles.filterButtonText}>All events</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Debug Info */}
-      <View style={styles.debugContainer}>
-        <Text style={styles.debugText}>Events Count: {events.length}</Text>
-        <Text style={styles.debugText}>Loading: {eventsLoading ? 'Yes' : 'No'}</Text>
-        <Text style={styles.debugText}>First Event: {events[0]?.title || 'None'}</Text>
-        <TouchableOpacity 
-          style={styles.refreshButton} 
-          onPress={() => {
-            console.log('🔄 Manual refresh triggered');
-            loadEvents();
-          }}
-        >
-          <Text style={styles.refreshButtonText}>Refresh Events</Text>
         </TouchableOpacity>
       </View>
 
@@ -632,45 +584,5 @@ const styles = StyleSheet.create({
   activeFilterTabText: {
     color: '#333',
     fontWeight: '600',
-  },
-  debugContainer: {
-    backgroundColor: '#f0f0f0',
-    padding: 10,
-    margin: 10,
-    borderRadius: 8,
-  },
-  debugText: {
-    fontSize: 12,
-    color: '#666',
-    marginTop: 10,
-  },
-  refreshButton: {
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 15,
-    paddingVertical: 8,
-    borderRadius: 6,
-    marginTop: 10,
-  },
-  refreshButtonText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  debugSignOutButton: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: '#ff4444',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1000,
-  },
-  debugSignOutText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
   },
 });

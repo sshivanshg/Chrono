@@ -94,12 +94,6 @@ export default function AddDateScreen() {
 
   const handleContinue = () => {
     // Navigate to photo selection screen
-    console.log('Event Name:', eventName);
-    console.log('Date selected:', selectedDate);
-    console.log('All Day:', isAllDay);
-    console.log('Repeats:', repeats);
-    
-    // Navigate to photo selection screen
     router.push({
       pathname: '/add-photo',
       params: { 

@@ -110,46 +110,15 @@ export default function AddPhotoScreen() {
 
   const selectImage = async (imageUrl: string) => {
     try {
-      // Upload image to backend
-      const formData = new FormData();
-      formData.append('image', {
-        uri: imageUrl,
-        type: 'image/jpeg',
-        name: 'event-image.jpg',
-      } as any);
-
-      const response = await fetch('http://localhost:3000/api/upload-image', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      const result = await response.json();
-      console.log('Image upload result:', result);
-
-      if (result.success && result.data.imageUrl) {
-        setSelectedImage(result.data.imageUrl);
-        console.log('Image uploaded successfully:', result.data.imageUrl);
-      } else {
-        console.error('Failed to upload image:', result.error);
-        // Fallback to local image
-        setSelectedImage(imageUrl);
-      }
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      // Fallback to local image
+      // Just store the local image URI (no backend upload needed)
       setSelectedImage(imageUrl);
+    } catch (error) {
+      console.error('Error selecting image:', error);
     }
   };
 
   const handleContinue = () => {
     if (selectedImage) {
-      console.log('Event Name:', eventName);
-      console.log('Selected Date:', selectedDate);
-      console.log('Selected Image:', selectedImage);
-      
       // Navigate to event preview
       router.push({
         pathname: '/event-preview',

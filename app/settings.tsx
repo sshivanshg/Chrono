@@ -17,7 +17,6 @@ export default function SettingsScreen() {
   const { signOut, user } = useAuth();
 
   const handleLogout = () => {
-    console.log('🚪 Logout button clicked');
     Alert.alert(
       'Sign Out',
       'Are you sure you want to sign out?',
@@ -28,12 +27,10 @@ export default function SettingsScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
-              console.log('🚪 Starting sign out process...');
               await signOut();
-              console.log('🚪 Sign out successful, redirecting to signin...');
               router.replace('/signin');
             } catch (error) {
-              console.error('🚪 Sign out error:', error);
+              console.error('Sign out error:', error);
               Alert.alert('Error', 'Failed to sign out. Please try again.');
             }
           },
