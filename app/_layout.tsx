@@ -2,6 +2,7 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import 'react-native-reanimated';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
@@ -14,14 +15,15 @@ export const unstable_settings = {
 function AppContent() {
   const colorScheme = useColorScheme();
   const { isSignedIn, loading } = useAuth();
+  const insets = useSafeAreaInsets();
 
   if (loading) {
-    return null; // Or a loading screen
+    return null; 
   }
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack screenOptions={{ headerShown: false }}>
+      <Stack screenOptions={{ headerShown: false, contentStyle: { paddingTop: insets.top } }}>
         {isSignedIn ? (
           <>
             <Stack.Screen name="(tabs)" />
