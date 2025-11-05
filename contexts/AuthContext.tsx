@@ -1,5 +1,8 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
 import AuthService, { AuthUser } from '../services/authService';
+
+// Temporary bypass flag: set to true to skip auth screen
+const BYPASS_AUTH = true;
 
 interface AuthContextType {
   user: AuthUser | null;
@@ -20,6 +23,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Temporary bypass: immediately set a mock user and skip real auth
+    if (BYPASS_AUTH) {
+      const mockUser: AuthUser = {
+        uid: 'test-user-123',
+        email: 'test@example.com',
+        displayName: 'Test User',
+        photoURL: null,
+      };
+      setUser(mockUser);
+      setLoading(false);
+      return;
+    }
+
     // Check if user is already authenticated
     const checkAuthStatus = async () => {
       try {

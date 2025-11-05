@@ -21,20 +21,20 @@ function AppContent() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
+      <Stack screenOptions={{ headerShown: false }}>
         {isSignedIn ? (
           <>
-            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen name="(tabs)" />
             <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
-            <Stack.Screen name="add-event" options={{ headerShown: false }} />
-            <Stack.Screen name="add-date" options={{ headerShown: false }} />
-            <Stack.Screen name="add-photo" options={{ headerShown: false }} />
-            <Stack.Screen name="event-preview" options={{ headerShown: false }} />
-            <Stack.Screen name="event-detail" options={{ headerShown: false }} />
-            <Stack.Screen name="calendar" options={{ headerShown: false }} />
+            <Stack.Screen name="add-event" />
+            <Stack.Screen name="add-date" />
+            <Stack.Screen name="add-photo" />
+            <Stack.Screen name="event-preview" />
+            <Stack.Screen name="event-detail" />
+            <Stack.Screen name="calendar" />
           </>
         ) : (
-          <Stack.Screen name="signin" options={{ headerShown: false }} />
+          <Stack.Screen name="signin" />
         )}
       </Stack>
       <StatusBar style="auto" />

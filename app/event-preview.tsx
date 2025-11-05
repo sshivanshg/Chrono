@@ -171,8 +171,6 @@ export default function EventPreviewScreen() {
       <View style={styles.bottomSection}>
         {eventCreated ? (
           <View style={styles.successContainer}>
-            <Text style={styles.successText}>✅ Event Created Successfully!</Text>
-            <Text style={styles.successSubtext}>Redirecting to home screen...</Text>
           </View>
         ) : (
           <TouchableOpacity 
