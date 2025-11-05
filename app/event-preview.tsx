@@ -151,7 +151,7 @@ export default function EventPreviewScreen() {
         </View>
 
         {/* Action Icons */}
-        <View style={styles.actionIcons}>
+        {/* <View style={styles.actionIcons}>
           <TouchableOpacity style={styles.actionButton}>
             <Text style={styles.actionIcon}>📅</Text>
             <Text style={styles.actionText}>Edit Date</Text>
@@ -164,7 +164,7 @@ export default function EventPreviewScreen() {
             <Text style={styles.actionIcon}>⏰</Text>
             <Text style={styles.actionText}>Set Time</Text>
           </TouchableOpacity>
-        </View>
+        </View> */}
       </ScrollView>
 
       {/* Done Button */}
