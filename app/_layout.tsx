@@ -33,6 +33,7 @@ function AppContent() {
             <Stack.Screen name="add-photo" />
             <Stack.Screen name="event-preview" />
             <Stack.Screen name="event-detail" />
+            <Stack.Screen name="event-actions" options={{ presentation: 'transparentModal', headerShown: false }} />
             <Stack.Screen name="calendar" />
           </>
         ) : (
