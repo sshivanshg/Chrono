@@ -92,7 +92,23 @@ export default function EventPreviewScreen() {
           <Text style={styles.backButtonText}>← Back</Text>
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Event Preview</Text>
-        <View style={styles.placeholder} />
+        <TouchableOpacity
+          style={styles.menuButton}
+          onPress={() =>
+            router.push({
+              pathname: '/event-actions',
+              params: {
+                eventTitle,
+                selectedDate,
+                isAllDay: String(isAllDay),
+                repeats: String(repeats),
+                selectedImage,
+              },
+            })
+          }
+        >
+          <Text style={styles.menuIcon}>⋯</Text>
+        </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.scrollView}>
@@ -217,6 +233,16 @@ const styles = StyleSheet.create({
   },
   placeholder: {
     width: 60,
+  },
+  menuButton: {
+    backgroundColor: '#f0f0f0',
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 16,
+  },
+  menuIcon: {
+    fontSize: 20,
+    color: '#000',
   },
   scrollView: {
     flex: 1,

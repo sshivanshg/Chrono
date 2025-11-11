@@ -133,7 +133,21 @@ export default function EventDetailScreen() {
           <Text style={styles.shareButtonText}>Share</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.menuButton}>
+        <TouchableOpacity
+          style={styles.menuButton}
+          onPress={() =>
+            router.push({
+              pathname: '/event-actions',
+              params: {
+                eventTitle: event.title,
+                selectedDate: (event.date as Date).toISOString(),
+                isAllDay: String(true),
+                repeats: String(false),
+                selectedImage: event.imageUrl || '',
+              },
+            })
+          }
+        >
           <Text style={styles.menuButtonText}>⋯</Text>
         </TouchableOpacity>
       </View>
