@@ -56,21 +56,35 @@ export default function AddPhotoScreen() {
 
   const requestPermissions = async () => {
     if (Platform.OS !== 'web') {
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      setHasPermission(status === 'granted');
-      
-      if (status !== 'granted') {
-        Alert.alert(
-          'Permission Required',
-          'We need access to your photo library to select images for your events.',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Open Settings', onPress: () => {
-              // In a real app, you would open device settings
-              console.log('Open settings');
-            }}
-          ]
-        );
+      try {
+        // Check current permission status first
+        const { status: existingStatus } = await ImagePicker.getMediaLibraryPermissionsAsync();
+        
+        if (existingStatus !== 'granted') {
+          // Request permission
+          const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+          setHasPermission(status === 'granted');
+          
+          if (status !== 'granted') {
+            Alert.alert(
+              'Permission Required',
+              'We need access to your photo library to select images for your events. Please enable it in Settings.',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Open Settings', onPress: async () => {
+                  if (Platform.OS === 'ios') {
+                    await ImagePicker.requestMediaLibraryPermissionsAsync();
+                  }
+                }}
+              ]
+            );
+          }
+        } else {
+          setHasPermission(true);
+        }
+      } catch (error) {
+        console.error('Permission error:', error);
+        setHasPermission(false);
       }
     } else {
       setHasPermission(true);
@@ -78,9 +92,17 @@ export default function AddPhotoScreen() {
   };
 
   const pickImageFromLibrary = async () => {
-    if (!hasPermission) {
-      Alert.alert('Permission Required', 'Please grant photo library access to select images.');
-      return;
+    // Re-check permissions before opening picker
+    if (Platform.OS !== 'web') {
+      const { status } = await ImagePicker.getMediaLibraryPermissionsAsync();
+      if (status !== 'granted') {
+        const { status: newStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (newStatus !== 'granted') {
+          Alert.alert('Permission Required', 'Please grant photo library access to select images.');
+          return;
+        }
+        setHasPermission(true);
+      }
     }
 
     try {
@@ -89,31 +111,54 @@ export default function AddPhotoScreen() {
         allowsEditing: true,
         aspect: [4, 3],
         quality: 0.8,
+        allowsMultipleSelection: false,
       });
 
-      if (!result.canceled && result.assets[0]) {
+      // Handle both old and new API formats
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const imageUri = result.assets[0].uri;
+        
+        if (!imageUri) {
+          Alert.alert('Error', 'Failed to get image URI. Please try again.');
+          return;
+        }
+
         const newPhoto = {
           id: `local_${Date.now()}`,
-          url: result.assets[0].uri,
+          url: imageUri,
           title: 'Selected Photo'
         };
         setLocalPhotos(prev => [newPhoto, ...prev]);
         
-        // Upload the image to backend
-        await selectImage(result.assets[0].uri);
+        // Select the image
+        await selectImage(imageUri);
+      } else if (result.canceled) {
+        // User cancelled, do nothing
+        console.log('User cancelled image picker');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error picking image:', error);
-      Alert.alert('Error', 'Failed to select image. Please try again.');
+      Alert.alert(
+        'Error', 
+        error?.message || 'Failed to select image. Please try again.',
+        [{ text: 'OK' }]
+      );
     }
   };
 
   const selectImage = async (imageUrl: string) => {
     try {
+      if (!imageUrl) {
+        console.warn('No image URL provided');
+        return;
+      }
+      
       // Just store the local image URI (no backend upload needed)
       setSelectedImage(imageUrl);
+      console.log('Image selected:', imageUrl);
     } catch (error) {
       console.error('Error selecting image:', error);
+      Alert.alert('Error', 'Failed to select image. Please try again.');
     }
   };
 
@@ -126,8 +171,6 @@ export default function AddPhotoScreen() {
           eventName: eventName,
           selectedDate: selectedDate,
           selectedImage: selectedImage,
-          isAllDay: isAllDay,
-          repeats: repeats
         }
       });
     } else {
@@ -148,7 +191,7 @@ export default function AddPhotoScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
       
-      {/* Header */}
+
       <View style={styles.header}>
         <TouchableOpacity onPress={handleBack} style={styles.backButton}>
           <Text style={styles.backIcon}>←</Text>
@@ -160,7 +203,7 @@ export default function AddPhotoScreen() {
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Photo Library Section */}
+
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Photo library</Text>
@@ -195,7 +238,7 @@ export default function AddPhotoScreen() {
         </View>
 
 
-        {/* Selected Image Preview */}
+
         {selectedImage && (
           <View style={styles.previewSection}>
             <Text style={styles.previewTitle}>Selected Image</Text>
@@ -206,7 +249,7 @@ export default function AddPhotoScreen() {
         )}
       </ScrollView>
 
-      {/* Continue Button */}
+
       <View style={styles.buttonContainer}>
         <TouchableOpacity 
           style={[

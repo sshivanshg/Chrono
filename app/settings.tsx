@@ -1,15 +1,18 @@
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useRouter } from 'expo-router';
 import React from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  SafeAreaView,
-  StatusBar,
-  ScrollView,
   Alert,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function SettingsScreen() {
@@ -41,24 +44,48 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+      <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
       
-     
-
-      {/* Secondary Header */}
-      <View style={styles.secondaryHeader}>
+      {/* Blurred Background */}
+      <Image 
+        source={{ uri: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&h=1200&fit=crop' }}
+        style={styles.backgroundImage}
+        blurRadius={20}
+      />
+      <LinearGradient
+        colors={['rgba(245, 245, 245, 0.85)', 'rgba(255, 255, 255, 0.95)']}
+        style={styles.backgroundOverlay}
+      />
+      
+      {/* Header */}
+      <View style={styles.header}>
         <TouchableOpacity 
           style={styles.backButton} 
           onPress={() => router.back()}
         >
-          <Text style={styles.backIcon}>✕</Text>
+          <Ionicons name="close" size={20} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.screenTitle}>Settings</Text>
         <View style={styles.placeholder} />
       </View>
 
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Chrono Pro Section */}
+        {/* Exclusive Offer Card */}
+        <View style={styles.offerCard}>
+          <View style={styles.offerIconContainer}>
+            <View style={styles.offerIconCircle}>
+              <Ionicons name="gift" size={24} color="#4A90E2" />
+            </View>
+          </View>
+          <View style={styles.offerContent}>
+            <Text style={styles.offerText}>An exclusive offer, just for you</Text>
+            <View style={styles.daysBadge}>
+              <Text style={styles.daysBadgeText}>3 days remaining</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Chrono Pro Card */}
         <View style={styles.proCard}>
           <View style={styles.proContent}>
             <Text style={styles.proTitle}>Chrono Pro</Text>
@@ -69,60 +96,74 @@ export default function SettingsScreen() {
               <Text style={styles.proButtonText}>Become a Pro</Text>
             </TouchableOpacity>
           </View>
-          <View style={styles.proIcon}>
-            <View style={styles.proIconInner} />
+          <View style={styles.proGraphic}>
+            <View style={styles.proGraphicInner} />
           </View>
         </View>
 
         {/* Settings List */}
         <View style={styles.settingsList}>
-          {/* Logout Button */}
-          <TouchableOpacity style={styles.settingItem} onPress={handleLogout}>
-            <View style={styles.settingIcon}>
-              <Text style={styles.settingIconText}>🚪</Text>
-            </View>
-            <Text style={styles.settingText}>Logout</Text>
-            <Text style={styles.settingArrow}>›</Text>
+          {/* Preferences */}
+          <TouchableOpacity style={styles.settingItem}>
+            <Ionicons name="settings-outline" size={20} color="#000" style={styles.settingIcon} />
+            <Text style={styles.settingText}>Preferences</Text>
+            <Ionicons name="chevron-forward" size={20} color="#999" />
           </TouchableOpacity>
 
           {/* Night Mode */}
           <TouchableOpacity style={styles.settingItem}>
-            <View style={styles.settingIcon}>
-              <Text style={styles.settingIconText}>🌙</Text>
-            </View>
+            <Ionicons name="moon-outline" size={20} color="#000" style={styles.settingIcon} />
             <Text style={styles.settingText}>Night mode</Text>
             <View style={styles.proTag}>
               <Text style={styles.proTagText}>PRO</Text>
             </View>
+            <Ionicons name="chevron-forward" size={20} color="#999" style={styles.settingArrow} />
           </TouchableOpacity>
 
           {/* Referrals */}
           <TouchableOpacity style={styles.settingItem}>
-            <View style={styles.settingIcon}>
-              <Text style={styles.settingIconText}>✈️</Text>
-            </View>
+            <Ionicons name="paper-plane-outline" size={20} color="#000" style={styles.settingIcon} />
             <Text style={styles.settingText}>Referrals</Text>
-            <Text style={styles.settingArrow}>›</Text>
+            <Ionicons name="chevron-forward" size={20} color="#999" />
           </TouchableOpacity>
 
-          {/* Connect Calendar */}
+          {/* Connect your calendar */}
           <TouchableOpacity style={styles.settingItem}>
-            <View style={styles.settingIcon}>
-              <Text style={styles.settingIconText}>📅</Text>
-            </View>
+            <Ionicons name="calendar-outline" size={20} color="#000" style={styles.settingIcon} />
             <Text style={styles.settingText}>Connect your calendar</Text>
             <View style={styles.connectedIndicator}>
               <View style={styles.connectedDot} />
-              <Text style={styles.settingArrow}>›</Text>
+              <Ionicons name="chevron-forward" size={20} color="#999" />
             </View>
           </TouchableOpacity>
 
-          {/* User Info */}
-          {user && (
-            <View style={styles.userInfo}>
-              <Text style={styles.userInfoText}>Signed in as: {user.email}</Text>
-            </View>
-          )}
+          {/* Support */}
+          <TouchableOpacity style={styles.settingItem}>
+            <Ionicons name="help-circle-outline" size={20} color="#000" style={styles.settingIcon} />
+            <Text style={styles.settingText}>Support</Text>
+            <Ionicons name="chevron-forward" size={20} color="#999" />
+          </TouchableOpacity>
+
+          {/* Suggestions */}
+          <TouchableOpacity style={styles.settingItem}>
+            <Ionicons name="chatbubble-outline" size={20} color="#000" style={styles.settingIcon} />
+            <Text style={styles.settingText}>Suggestions</Text>
+            <Ionicons name="chevron-forward" size={20} color="#999" />
+          </TouchableOpacity>
+
+          {/* About */}
+          <TouchableOpacity style={styles.settingItem}>
+            <Ionicons name="information-circle-outline" size={20} color="#000" style={styles.settingIcon} />
+            <Text style={styles.settingText}>About</Text>
+            <Ionicons name="chevron-forward" size={20} color="#999" />
+          </TouchableOpacity>
+
+          {/* Rate app */}
+          <TouchableOpacity style={styles.settingItem}>
+            <Ionicons name="star-outline" size={20} color="#000" style={styles.settingIcon} />
+            <Text style={styles.settingText}>Rate app</Text>
+            <Ionicons name="chevron-forward" size={20} color="#999" />
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -132,40 +173,33 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f5f5f5',
+  },
+  backgroundImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+  },
+  backgroundOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  windowControls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginRight: 15,
-  },
-  controlDot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    marginRight: 6,
-  },
-  appTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#000',
-  },
-  secondaryHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 20,
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    paddingVertical: 16,
+    zIndex: 10,
   },
   backButton: {
     width: 40,
@@ -175,11 +209,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  backIcon: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
+  
   screenTitle: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -191,30 +221,75 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
     paddingHorizontal: 20,
+    zIndex: 10,
+  },
+  offerCard: {
+    backgroundColor: '#1a1a1a',
+    borderRadius: 16,
+    padding: 20,
+    marginTop: 20,
+    marginBottom: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  offerIconContainer: {
+    marginRight: 16,
+  },
+  offerIconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(74, 144, 226, 0.2)',
+    borderWidth: 2,
+    borderColor: '#4A90E2',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  offerContent: {
+    flex: 1,
+  },
+  offerText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
+    marginBottom: 8,
+  },
+  daysBadge: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+  },
+  daysBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#000',
   },
   proCard: {
-    backgroundColor: '#000',
+    backgroundColor: '#1a1a1a',
     borderRadius: 16,
     padding: 24,
-    marginTop: 20,
-    marginBottom: 20,
+    marginBottom: 24,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    minHeight: 180,
   },
   proContent: {
     flex: 1,
+    marginRight: 16,
   },
   proTitle: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
     color: '#fff',
     marginBottom: 8,
   },
   proDescription: {
-    fontSize: 16,
+    fontSize: 15,
     color: '#fff',
-    opacity: 0.9,
+    opacity: 0.85,
     marginBottom: 20,
     lineHeight: 22,
   },
@@ -222,27 +297,31 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingHorizontal: 20,
     paddingVertical: 12,
-    borderRadius: 8,
+    borderRadius: 20,
     alignSelf: 'flex-start',
   },
   proButtonText: {
     color: '#000',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
   },
-  proIcon: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#333',
+  proGraphic: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: 'rgba(74, 144, 226, 0.3)',
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative',
+    overflow: 'hidden',
   },
-  proIconInner: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: '#666',
+  proGraphicInner: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(255, 165, 0, 0.4)',
+    borderWidth: 3,
+    borderColor: '#4A90E2',
   },
   settingsList: {
     marginBottom: 20,
@@ -252,21 +331,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 16,
     paddingHorizontal: 16,
-    backgroundColor: '#f8f8f8',
+    backgroundColor: '#fff',
     borderRadius: 12,
     marginBottom: 8,
   },
   settingIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: '#e0e0e0',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 16,
-  },
-  settingIconText: {
-    fontSize: 16,
+    marginRight: 12,
   },
   settingText: {
     flex: 1,
@@ -275,21 +345,20 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   settingArrow: {
-    fontSize: 20,
-    color: '#999',
-    fontWeight: 'bold',
+    marginLeft: 8,
   },
   proTag: {
     backgroundColor: '#f0f0f0',
-    paddingHorizontal: 8,
+    paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 4,
+    borderRadius: 8,
     marginRight: 8,
   },
   proTagText: {
-    fontSize: 12,
-    color: '#666',
-    fontWeight: '600',
+    fontSize: 11,
+    color: '#999',
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
   connectedIndicator: {
     flexDirection: 'row',
@@ -301,17 +370,5 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: '#4CAF50',
     marginRight: 8,
-  },
-  userInfo: {
-    marginTop: 20,
-    padding: 16,
-    backgroundColor: '#f8f8f8',
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  userInfoText: {
-    fontSize: 14,
-    color: '#666',
-    fontStyle: 'italic',
   },
 });

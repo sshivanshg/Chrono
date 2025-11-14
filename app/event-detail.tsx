@@ -139,6 +139,7 @@ export default function EventDetailScreen() {
             router.push({
               pathname: '/event-actions',
               params: {
+                eventId: event.id,
                 eventTitle: event.title,
                 selectedDate: (event.date as Date).toISOString(),
                 isAllDay: String(true),
