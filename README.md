@@ -19,15 +19,9 @@ Chrono/
 │   └── environment.ts      # Environment settings
 ├── contexts/              # React contexts
 │   └── AuthContext.tsx    # Authentication context
-├── services/              # Business logic and API services
-│   ├── api/               # API client and services
-│   │   ├── client.ts      # HTTP client
-│   │   ├── endpoints.ts   # API endpoints
-│   │   ├── tasks.ts       # Task API service
-│   │   ├── timeTracking.ts # Time tracking API service
-│   │   └── index.ts       # API exports
-│   ├── auth.ts            # Authentication service
-│   └── expoAuth.ts        # Expo AuthSession service
+├── services/              # Business logic and API helpers
+│   ├── apiClient.ts       # Centralized HTTP client
+│   └── authService.ts     # Authentication / Google sign-in helper
 ├── types/                 # TypeScript type definitions
 │   └── index.ts           # Core types
 ├── assets/                # Static assets
@@ -125,7 +119,20 @@ export const development: Environment = {
 
 ## 🔌 API Integration
 
-The frontend communicates with your backend through a well-defined API:
+All network requests must go through `services/apiClient.ts`. The client automatically:
+- prefixes requests with `environment.apiBaseUrl`
+- attaches the Authorization header from `AuthService`
+- throws typed `ApiError` instances on failures
+
+```ts
+import { apiClient } from '@/services/apiClient';
+
+export const fetchEvents = () => apiClient.get('/events');
+export const createEvent = (payload: CreateEventPayload) =>
+  apiClient.post('/events', payload);
+```
+
+The frontend communicates with your backend through these REST endpoints:
 
 ### Authentication
 - `POST /auth/login` - User login
