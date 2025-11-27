@@ -1,4 +1,4 @@
-// Environment configuration for frontend
+
 export interface Environment {
   apiBaseUrl: string;
   firebase: {
@@ -19,9 +19,8 @@ export interface Environment {
   };
 }
 
-// Development environment
 export const development: Environment = {
-  apiBaseUrl: 'http://localhost:3000/api', // Your backend API URL
+  apiBaseUrl: 'http://localhost:3000/api',
   firebase: {
     apiKey: "AIzaSyDgMJ57NuloSZup7myB6QnSa7QhRC2G7m0",
     authDomain: "chrono-d649f.firebaseapp.com",
@@ -40,9 +39,8 @@ export const development: Environment = {
   },
 };
 
-// Production environment
 export const production: Environment = {
-  apiBaseUrl: 'https://your-api-domain.com/api', // Your production API URL
+  apiBaseUrl: 'https://your-api-domain.com/api',
   firebase: {
     apiKey: "AIzaSyDgMJ57NuloSZup7myB6QnSa7QhRC2G7m0",
     authDomain: "chrono-d649f.firebaseapp.com",
@@ -61,7 +59,7 @@ export const production: Environment = {
   },
 };
 
-// Get current environment
+
 const getEnvironment = (): Environment => {
   const env = process.env.NODE_ENV || 'development';
   return env === 'production' ? production : development;

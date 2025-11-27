@@ -1,22 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
-  TouchableOpacity, 
-  Image, 
-  Dimensions,
-  SafeAreaView,
-  StatusBar
-} from 'react-native';
 import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import {
+  Dimensions,
+  Image,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from 'react-native';
 import { useAuth } from '../../contexts/AuthContext';
 import { useEvents } from '../../contexts/EventContext';
 import { Event } from '../../types';
 
 const { width } = Dimensions.get('window');
-const cardWidth = (width - 60) / 3; // 3 columns with 20px padding on each side
 
 
 export default function HomeScreen() {
@@ -83,13 +82,13 @@ export default function HomeScreen() {
       return null; // Don't render if event is undefined
     }
 
-  return (
+    return (
       <TouchableOpacity 
         style={styles.eventCard}
         onPress={() => router.push(`/event-detail?eventId=${event.id}`)}
       >
         <Image
-          source={{ uri: event.imageUrl || 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=300&h=200&fit=crop' }} 
+          source={{ uri: event.imageUrl || 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800&h=400&fit=crop' }} 
           style={styles.eventImage} 
         />
         <View style={styles.eventOverlay}>
@@ -172,8 +171,8 @@ export default function HomeScreen() {
                       </View>
                     </TouchableOpacity>
                   ) : (
-                    // Show events grid for multiple events
-                    <View style={styles.eventsGrid}>
+                    // Show full-width event cards for multiple events
+                    <View style={styles.eventsList}>
                       {filteredEvents.map((event) => (
                         <EventCard key={event.id} event={event} />
                       ))}
@@ -199,14 +198,14 @@ export default function HomeScreen() {
           // Show mock events ONLY when user has NO real events at all
           return (
             <View>
-            {/* Mock Events Grid */}
-            <View style={styles.eventsGrid}>
+            {/* Mock Events List - Full Width Cards */}
+            <View style={styles.eventsList}>
               {/* Mock Event 1 */}
               <TouchableOpacity 
                 style={styles.eventCard}
                 onPress={() => router.push('/event-detail?eventId=mock-1')}
               >
-                <Image source={{ uri: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=300&h=200&fit=crop' }} style={styles.eventImage} />
+                <Image source={{ uri: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&h=400&fit=crop' }} style={styles.eventImage} />
                 <View style={styles.eventOverlay}>
                   <Text style={styles.timeframeText}>IN 28 DAYS</Text>
                   <Text style={styles.eventTitle}>Kate's Party</Text>
@@ -218,7 +217,7 @@ export default function HomeScreen() {
                 style={styles.eventCard}
                 onPress={() => router.push('/event-detail?eventId=mock-2')}
               >
-                <Image source={{ uri: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=300&h=200&fit=crop' }} style={styles.eventImage} />
+                <Image source={{ uri: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800&h=400&fit=crop' }} style={styles.eventImage} />
                 <View style={styles.eventOverlay}>
                   <Text style={styles.timeframeText}>IN 3 DAYS</Text>
                   <Text style={styles.eventTitle}>Basketball</Text>
@@ -230,7 +229,7 @@ export default function HomeScreen() {
                 style={styles.eventCard}
                 onPress={() => router.push('/event-detail?eventId=mock-3')}
               >
-                <Image source={{ uri: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=300&h=200&fit=crop' }} style={styles.eventImage} />
+                <Image source={{ uri: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=400&fit=crop' }} style={styles.eventImage} />
                 <View style={styles.eventOverlay}>
                   <Text style={styles.timeframeText}>IN 16 WEEKS</Text>
                   <Text style={styles.eventTitle}>Moving House</Text>
@@ -242,7 +241,7 @@ export default function HomeScreen() {
                 style={styles.eventCard}
                 onPress={() => router.push('/event-detail?eventId=mock-4')}
               >
-                <Image source={{ uri: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=300&h=200&fit=crop' }} style={styles.eventImage} />
+                <Image source={{ uri: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&h=400&fit=crop' }} style={styles.eventImage} />
                 <View style={styles.eventOverlay}>
                   <Text style={styles.timeframeText}>TOMORROW</Text>
                   <Text style={styles.eventTitle}>Anniversary</Text>
@@ -254,7 +253,7 @@ export default function HomeScreen() {
                 style={styles.eventCard}
                 onPress={() => router.push('/event-detail?eventId=mock-5')}
               >
-                <Image source={{ uri: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=300&h=200&fit=crop' }} style={styles.eventImage} />
+                <Image source={{ uri: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=400&fit=crop' }} style={styles.eventImage} />
                 <View style={styles.eventOverlay}>
                   <Text style={styles.timeframeText}>IN 3 HOURS</Text>
                   <Text style={styles.eventTitle}>Workout</Text>
@@ -266,7 +265,7 @@ export default function HomeScreen() {
                 style={styles.eventCard}
                 onPress={() => router.push('/event-detail?eventId=mock-6')}
               >
-                <Image source={{ uri: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=300&h=200&fit=crop' }} style={styles.eventImage} />
+                <Image source={{ uri: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=400&fit=crop' }} style={styles.eventImage} />
                 <View style={styles.eventOverlay}>
                   <Text style={styles.timeframeText}>IN 1 MONTH</Text>
                   <Text style={styles.eventTitle}>Pool Party</Text>
@@ -419,12 +418,9 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
-  eventsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+  eventsList: {
     paddingHorizontal: 20,
-    justifyContent: 'space-between',
-    marginBottom: 30,
+    paddingBottom: 20,
   },
   mainEventCard: {
     marginHorizontal: 20,
@@ -468,8 +464,8 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   eventCard: {
-    width: cardWidth,
-    height: cardWidth * 1.3,
+    width: '100%',
+    height: 280,
     borderRadius: 16,
     marginBottom: 20,
     overflow: 'hidden',
@@ -477,11 +473,11 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 4,
     },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 5,
   },
   eventImage: {
     width: '100%',
@@ -494,22 +490,23 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    padding: 16,
+    padding: 20,
     borderBottomLeftRadius: 16,
     borderBottomRightRadius: 16,
   },
   timeframeText: {
     color: '#fff',
-    fontSize: 11,
-    fontWeight: '500',
-    marginBottom: 6,
+    fontSize: 13,
+    fontWeight: '600',
+    marginBottom: 8,
     opacity: 0.9,
+    letterSpacing: 0.5,
   },
   eventTitle: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 22,
     fontWeight: 'bold',
-    lineHeight: 20,
+    lineHeight: 28,
   },
   addEventsSection: {
     paddingHorizontal: 20,
