@@ -11,6 +11,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
@@ -74,7 +75,7 @@ export default function AddEventScreen() {
         <Text style={styles.title}>Add event</Text>
         
         <TouchableOpacity onPress={handleCalendarPress} style={styles.calendarButton}>
-          <Text style={styles.calendarIcon}>📅</Text>
+          <Ionicons name="calendar-outline" size={20} color="#fff" />
         </TouchableOpacity>
       </View>
 
@@ -181,9 +182,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  calendarIcon: {
-    fontSize: 16,
   },
   content: {
     flex: 1,

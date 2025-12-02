@@ -240,7 +240,7 @@ export default function EventActionsScreen() {
 
         {/* PRO row */ }
         <View style={[styles.sheetItem, styles.disabledRow]}>
-          <View style={styles.iconBox}><MaterialCommunityIcons name="calendar-range-outline" size={18} color="#111" /></View>
+          <View style={styles.iconBox}><Ionicons name="calendar-outline" size={18} color="#111" /></View>
           <Text style={[styles.sheetItemText, styles.disabledText]}>Countdown Format</Text>
           <View style={styles.proBadge}><Text style={styles.proBadgeText}>PRO</Text></View>
         </View>

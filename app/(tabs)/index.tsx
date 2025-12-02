@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
@@ -133,7 +134,7 @@ export default function HomeScreen() {
           style={styles.addButton}
           onPress={() => router.push('/add-event')}
         >
-          <Text style={styles.addButtonText}>📅</Text>
+          <Ionicons name="calendar-outline" size={22} color="#fff" />
         </TouchableOpacity>
       </View>
 
@@ -367,11 +368,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#000',
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  addButtonText: {
-    color: '#fff',
-    fontSize: 20,
-    fontWeight: 'bold',
   },
   filterContainer: {
     paddingHorizontal: 20,

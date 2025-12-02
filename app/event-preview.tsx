@@ -166,21 +166,6 @@ export default function EventPreviewScreen() {
           </View>
         </View>
 
-        {/* Action Icons */}
-        {/* <View style={styles.actionIcons}>
-          <TouchableOpacity style={styles.actionButton}>
-            <Text style={styles.actionIcon}>📅</Text>
-            <Text style={styles.actionText}>Edit Date</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
-            <Text style={styles.actionIcon}>📷</Text>
-            <Text style={styles.actionText}>Change Photo</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.actionButton}>
-            <Text style={styles.actionIcon}>⏰</Text>
-            <Text style={styles.actionText}>Set Time</Text>
-          </TouchableOpacity>
-        </View> */}
       </ScrollView>
 
       {/* Done Button */}
