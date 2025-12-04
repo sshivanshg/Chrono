@@ -1,17 +1,21 @@
-import React, { useState, useRef, useEffect } from 'react';
+ import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  SafeAreaView,
-  StatusBar,
-  ScrollView,
   Dimensions,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
 
 const { width } = Dimensions.get('window');
+const PICKER_ITEM_HEIGHT = 50;
+const PICKER_CENTER_PADDING = 50; // must match pickerContent paddingVertical
 
 export default function AddDateScreen() {
   const router = useRouter();
@@ -27,9 +31,9 @@ export default function AddDateScreen() {
   const [selectedMonth, setSelectedMonth] = useState(selectedDate.getMonth());
   const [selectedYear, setSelectedYear] = useState(selectedDate.getFullYear());
   
-  const dayScrollRef = useRef<ScrollView>(null);
-  const monthScrollRef = useRef<ScrollView>(null);
-  const yearScrollRef = useRef<ScrollView>(null);
+  const dayScrollRef = useRef<ScrollView | null>(null);
+  const monthScrollRef = useRef<ScrollView | null>(null);
+  const yearScrollRef = useRef<ScrollView | null>(null);
 
   // Generate data for pickers
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
@@ -69,12 +73,42 @@ export default function AddDateScreen() {
     updateSelectedDate();
   };
 
-  const scrollToItem = (scrollRef: React.RefObject<ScrollView>, index: number, itemHeight: number = 50) => {
+  const scrollToItem = (
+    scrollRef: React.RefObject<ScrollView | null>,
+    index: number,
+    itemHeight: number = PICKER_ITEM_HEIGHT
+  ) => {
     if (scrollRef.current) {
       scrollRef.current.scrollTo({
         y: index * itemHeight,
         animated: true,
       });
+    }
+  };
+
+  const handlePickerScrollEnd = (
+    type: 'day' | 'month' | 'year',
+    event: NativeSyntheticEvent<NativeScrollEvent>
+  ) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    // Adjust for top padding so the centered item is treated as index
+    const adjustedOffset = offsetY - PICKER_CENTER_PADDING;
+    const rawIndex = Math.round(adjustedOffset / PICKER_ITEM_HEIGHT);
+
+    if (type === 'day') {
+      const index = Math.min(Math.max(rawIndex, 0), days.length - 1);
+      const value = days[index];
+      handleDayChange(value);
+      scrollToItem(dayScrollRef, index);
+    } else if (type === 'month') {
+      const index = Math.min(Math.max(rawIndex, 0), months.length - 1);
+      handleMonthChange(index);
+      scrollToItem(monthScrollRef, index);
+    } else {
+      const index = Math.min(Math.max(rawIndex, 0), years.length - 1);
+      const value = years[index];
+      handleYearChange(value);
+      scrollToItem(yearScrollRef, index);
     }
   };
 
@@ -138,8 +172,12 @@ export default function AddDateScreen() {
                 <ScrollView
                   ref={dayScrollRef}
                   showsVerticalScrollIndicator={false}
-                  snapToInterval={50}
+                  snapToInterval={PICKER_ITEM_HEIGHT}
                   decelerationRate="fast"
+                  contentContainerStyle={styles.pickerContent}
+                  onMomentumScrollEnd={(event) =>
+                    handlePickerScrollEnd('day', event)
+                  }
                   style={styles.pickerScroll}
                 >
                   {days.map((day, index) => (
@@ -172,8 +210,12 @@ export default function AddDateScreen() {
                 <ScrollView
                   ref={monthScrollRef}
                   showsVerticalScrollIndicator={false}
-                  snapToInterval={50}
+                  snapToInterval={PICKER_ITEM_HEIGHT}
                   decelerationRate="fast"
+                  contentContainerStyle={styles.pickerContent}
+                  onMomentumScrollEnd={(event) =>
+                    handlePickerScrollEnd('month', event)
+                  }
                   style={styles.pickerScroll}
                 >
                   {months.map((month, index) => (
@@ -206,8 +248,12 @@ export default function AddDateScreen() {
                 <ScrollView
                   ref={yearScrollRef}
                   showsVerticalScrollIndicator={false}
-                  snapToInterval={50}
+                  snapToInterval={PICKER_ITEM_HEIGHT}
                   decelerationRate="fast"
+                  contentContainerStyle={styles.pickerContent}
+                  onMomentumScrollEnd={(event) =>
+                    handlePickerScrollEnd('year', event)
+                  }
                   style={styles.pickerScroll}
                 >
                   {years.map((year, index) => (
@@ -379,6 +425,9 @@ const styles = StyleSheet.create({
   pickerScroll: {
     flex: 1,
   },
+  pickerContent: {
+    paddingVertical: 50, // center the selected item in the wheel (150 height, 50 item height)
+  },
   pickerOption: {
     height: 50,
     justifyContent: 'center',
@@ -421,32 +470,36 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   toggle: {
-    width: 50,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: '#e0e0e0',
-    justifyContent: 'center',
-    paddingHorizontal: 2,
+    width: 74,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#ffffff', // flat white track when OFF
+    borderWidth: 1,
+    borderColor: '#1a1a1a',
+    paddingHorizontal: 3,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
   },
   toggleActive: {
-    backgroundColor: '#000',
+    backgroundColor: '#000', // solid black when ON
+    justifyContent: 'flex-end',
   },
   toggleThumb: {
     width: 26,
     height: 26,
     borderRadius: 13,
-    backgroundColor: '#fff',
+    backgroundColor: '#000', // thumb is black when OFF
+    // flatter look – very subtle shadow
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 0.5 },
+    shadowOpacity: 0.15,
+    shadowRadius: 1.5,
+    elevation: 1,
   },
   toggleThumbActive: {
-    alignSelf: 'flex-end',
+    // when ON, thumb turns white for contrast on black track
+    backgroundColor: '#fff',
   },
   buttonContainer: {
     paddingHorizontal: 20,
