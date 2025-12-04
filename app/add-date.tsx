@@ -15,7 +15,6 @@ import {
 
 const { width } = Dimensions.get('window');
 const PICKER_ITEM_HEIGHT = 50;
-const PICKER_CENTER_PADDING = 50; // must match pickerContent paddingVertical
 
 export default function AddDateScreen() {
   const router = useRouter();
@@ -91,9 +90,8 @@ export default function AddDateScreen() {
     event: NativeSyntheticEvent<NativeScrollEvent>
   ) => {
     const offsetY = event.nativeEvent.contentOffset.y;
-    // Adjust for top padding so the centered item is treated as index
-    const adjustedOffset = offsetY - PICKER_CENTER_PADDING;
-    const rawIndex = Math.round(adjustedOffset / PICKER_ITEM_HEIGHT);
+    // Centered item index, assuming picker wheel shows 3 items (height 150)
+    const rawIndex = Math.round(offsetY / PICKER_ITEM_HEIGHT) + 1;
 
     if (type === 'day') {
       const index = Math.min(Math.max(rawIndex, 0), days.length - 1);
@@ -109,6 +107,36 @@ export default function AddDateScreen() {
       const value = years[index];
       handleYearChange(value);
       scrollToItem(yearScrollRef, index);
+    }
+  };
+
+  const handlePickerScroll = (
+    type: 'day' | 'month' | 'year',
+    event: NativeSyntheticEvent<NativeScrollEvent>
+  ) => {
+    const offsetY = event.nativeEvent.contentOffset.y;
+    const rawIndex = Math.round(offsetY / PICKER_ITEM_HEIGHT) + 1;
+
+    if (type === 'day') {
+      const index = Math.min(Math.max(rawIndex, 0), days.length - 1);
+      const value = days[index];
+      if (value !== selectedDay) {
+        setSelectedDay(value);
+        updateSelectedDate();
+      }
+    } else if (type === 'month') {
+      const index = Math.min(Math.max(rawIndex, 0), months.length - 1);
+      if (index !== selectedMonth) {
+        setSelectedMonth(index);
+        updateSelectedDate();
+      }
+    } else {
+      const index = Math.min(Math.max(rawIndex, 0), years.length - 1);
+      const value = years[index];
+      if (value !== selectedYear) {
+        setSelectedYear(value);
+        updateSelectedDate();
+      }
     }
   };
 
@@ -174,7 +202,8 @@ export default function AddDateScreen() {
                   showsVerticalScrollIndicator={false}
                   snapToInterval={PICKER_ITEM_HEIGHT}
                   decelerationRate="fast"
-                  contentContainerStyle={styles.pickerContent}
+                  onScroll={(event) => handlePickerScroll('day', event)}
+                  scrollEventThrottle={16}
                   onMomentumScrollEnd={(event) =>
                     handlePickerScrollEnd('day', event)
                   }
@@ -212,7 +241,8 @@ export default function AddDateScreen() {
                   showsVerticalScrollIndicator={false}
                   snapToInterval={PICKER_ITEM_HEIGHT}
                   decelerationRate="fast"
-                  contentContainerStyle={styles.pickerContent}
+                  onScroll={(event) => handlePickerScroll('month', event)}
+                  scrollEventThrottle={16}
                   onMomentumScrollEnd={(event) =>
                     handlePickerScrollEnd('month', event)
                   }
@@ -250,7 +280,8 @@ export default function AddDateScreen() {
                   showsVerticalScrollIndicator={false}
                   snapToInterval={PICKER_ITEM_HEIGHT}
                   decelerationRate="fast"
-                  contentContainerStyle={styles.pickerContent}
+                  onScroll={(event) => handlePickerScroll('year', event)}
+                  scrollEventThrottle={16}
                   onMomentumScrollEnd={(event) =>
                     handlePickerScrollEnd('year', event)
                   }
@@ -424,9 +455,6 @@ const styles = StyleSheet.create({
   },
   pickerScroll: {
     flex: 1,
-  },
-  pickerContent: {
-    paddingVertical: 50, // center the selected item in the wheel (150 height, 50 item height)
   },
   pickerOption: {
     height: 50,

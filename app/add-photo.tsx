@@ -1,19 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  SafeAreaView,
-  StatusBar,
-  ScrollView,
-  Image,
-  Alert,
-  Platform,
-  Dimensions,
-} from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import {
+  Alert,
+  Dimensions,
+  Image,
+  Platform,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { useEvents } from '../contexts/EventContext';
 
 const { width } = Dimensions.get('window');
 
@@ -29,6 +30,7 @@ export default function AddPhotoScreen() {
   const selectedDate = params.selectedDate as string || '';
   const isAllDay = params.isAllDay === 'true';
   const repeats = params.repeats === 'true';
+  const { addEvent, loadEvents } = useEvents();
   
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
@@ -162,19 +164,42 @@ export default function AddPhotoScreen() {
     }
   };
 
-  const handleContinue = () => {
-    if (selectedImage) {
-      // Navigate to event preview
-      router.push({
-        pathname: '/event-preview',
-        params: {
-          eventName: eventName,
-          selectedDate: selectedDate,
-          selectedImage: selectedImage,
-        }
-      });
-    } else {
+  const [isCreating, setIsCreating] = useState(false);
+
+  const handleContinue = async () => {
+    if (!selectedImage) {
       Alert.alert('No Image Selected', 'Please select an image for your event.');
+      return;
+    }
+
+    if (isCreating) return;
+
+    try {
+      setIsCreating(true);
+
+      const eventTitle = eventName || 'Untitled event';
+      const eventDate = selectedDate ? new Date(selectedDate) : new Date();
+
+      const newEventId = await addEvent({
+        userId: 'user1',
+        title: eventTitle,
+        description: `Event created on ${new Date().toLocaleDateString()}`,
+        date: eventDate,
+        isAllDay,
+        startTime: isAllDay ? undefined : '09:00',
+        endTime: isAllDay ? undefined : '10:00',
+        location: undefined,
+        imageUrl: selectedImage,
+      });
+
+      await loadEvents();
+
+      router.replace(`/event-detail?eventId=${newEventId}`);
+    } catch (error: any) {
+      console.error('Error creating event from photo screen:', error);
+      Alert.alert('Error', error?.message || 'Failed to create event. Please try again.');
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -254,12 +279,14 @@ export default function AddPhotoScreen() {
         <TouchableOpacity 
           style={[
             styles.continueButton,
-            !selectedImage && styles.continueButtonDisabled
+            (!selectedImage || isCreating) && styles.continueButtonDisabled
           ]}
           onPress={handleContinue}
-          disabled={!selectedImage}
+          disabled={!selectedImage || isCreating}
         >
-          <Text style={styles.continueButtonText}>Continue</Text>
+          <Text style={styles.continueButtonText}>
+            {isCreating ? 'Creating...' : 'Continue'}
+          </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

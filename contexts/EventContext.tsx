@@ -1,10 +1,10 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Event } from '../types';
 
 interface EventContextType {
   events: Event[];
-  addEvent: (event: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>;
+  addEvent: (event: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>) => Promise<string>;
   updateEvent: (id: string, event: Partial<Event>) => Promise<void>;
   deleteEvent: (id: string) => Promise<void>;
   getEventsForDate: (date: Date) => Event[];
@@ -76,7 +76,7 @@ export const EventProvider: React.FC<EventProviderProps> = ({ children }) => {
     }
   };
 
-  const addEvent = async (eventData: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const addEvent = async (eventData: Omit<Event, 'id' | 'createdAt' | 'updatedAt'>): Promise<string> => {
     try {
       const newEvent: Event = {
         ...eventData,
@@ -87,6 +87,7 @@ export const EventProvider: React.FC<EventProviderProps> = ({ children }) => {
       };
       
       setEvents(prev => [...prev, newEvent]);
+      return newEvent.id;
     } catch (error) {
       console.error('Error creating event:', error);
       throw error;

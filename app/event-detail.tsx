@@ -1,15 +1,15 @@
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
+  Dimensions,
+  Image,
   SafeAreaView,
   StatusBar,
-  Image,
-  Dimensions,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useEvents } from '../contexts/EventContext';
 
 const { width, height } = Dimensions.get('window');
@@ -38,34 +38,8 @@ export default function EventDetailScreen() {
         date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
         timeframe: 'IN 3 DAYS'
       },
-      'mock-3': {
-        id: 'mock-3',
-        title: 'Moving House',
-        imageUrl: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=300&h=200&fit=crop',
-        date: new Date(Date.now() + 16 * 7 * 24 * 60 * 60 * 1000), // 16 weeks from now
-        timeframe: 'IN 16 WEEKS'
-      },
-      'mock-4': {
-        id: 'mock-4',
-        title: 'Anniversary',
-        imageUrl: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=300&h=200&fit=crop',
-        date: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), // Tomorrow
-        timeframe: 'TOMORROW'
-      },
-      'mock-5': {
-        id: 'mock-5',
-        title: 'Workout',
-        imageUrl: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=300&h=200&fit=crop',
-        date: new Date(Date.now() + 3 * 60 * 60 * 1000), // 3 hours from now
-        timeframe: 'IN 3 HOURS'
-      },
-      'mock-6': {
-        id: 'mock-6',
-        title: 'Pool Party',
-        imageUrl: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=300&h=200&fit=crop',
-        date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 1 month from now
-        timeframe: 'IN 1 MONTH'
-      }
+
+
     };
     return mockEvents[id as keyof typeof mockEvents];
   };
@@ -77,7 +51,7 @@ export default function EventDetailScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Event not found</Text>
-          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.replace('/(tabs)')}>
             <Text style={styles.backButtonText}>Go Back</Text>
           </TouchableOpacity>
         </View>
@@ -125,7 +99,7 @@ export default function EventDetailScreen() {
       
       {/* Top Navigation */}
       <View style={styles.topNavigation}>
-        <TouchableOpacity style={styles.topButton} onPress={() => router.back()}>
+        <TouchableOpacity style={styles.topButton} onPress={() => router.replace('/(tabs)')}>
           <Text style={styles.topButtonText}>✕</Text>
         </TouchableOpacity>
         
@@ -133,7 +107,22 @@ export default function EventDetailScreen() {
           <Text style={styles.shareButtonText}>Share</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style={styles.menuButton}>
+        <TouchableOpacity
+          style={styles.menuButton}
+          onPress={() =>
+            router.push({
+              pathname: '/event-actions',
+              params: {
+                eventId,
+                eventTitle: event.title,
+                selectedDate: event.date.toISOString(),
+                isAllDay: String((event as any).isAllDay ?? true),
+                repeats: String(!!(event as any).recurrence),
+                selectedImage: event.imageUrl || '',
+              },
+            })
+          }
+        >
           <Text style={styles.menuButtonText}>⋯</Text>
         </TouchableOpacity>
       </View>
