@@ -1,8 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as AuthSession from 'expo-auth-session';
-import Constants from 'expo-constants';
 import * as WebBrowser from 'expo-web-browser';
 import { jwtDecode } from 'jwt-decode';
+import { Platform } from 'react-native';
 import { environment } from '../config/environment';
 
 // Complete the auth session loop - this is crucial for handling redirects
@@ -22,26 +22,29 @@ class AuthService {
   // Sign in with Google (local only, no backend)
   async signInWithGoogle(): Promise<AuthUser> {
     try {
-      // Google OAuth configuration
-      const useProxy = Constants.appOwnership === 'expo'; // Use proxy in Expo Go
-      // When using Expo Go proxy, do not pass a custom scheme to avoid mismatches
-      const redirectUri = useProxy
-        ? AuthSession.makeRedirectUri({ useProxy: true })
-        : AuthSession.makeRedirectUri({ scheme: 'chrono' });
-      const clientId = environment.googleSignIn.webClientId;
+      let redirectUri = AuthSession.makeRedirectUri({
+        path: 'signin',
+      });
+
+      if (Platform.OS !== 'web') {
+        // Force Expo Auth Proxy for Expo Go to avoid 'exp://' which Google rejects
+        redirectUri = 'https://auth.expo.io/@shivansh_11/Chrono';
+      }
+
+      console.log('------------------------------------------------');
+      console.log('PLEASE ADD THIS URI TO GOOGLE CLOUD CONSOLE:');
+      console.log(redirectUri);
+      console.log('------------------------------------------------');
 
       const request = new AuthSession.AuthRequest({
-        clientId: clientId,
-        scopes: ['openid', 'profile', 'email'],
+        clientId: environment.googleSignIn.webClientId,
         redirectUri,
-        // In Expo Go, request an ID token directly to avoid client_secret/code exchange
-        responseType: useProxy ? (AuthSession.ResponseType as any).IdToken : AuthSession.ResponseType.Code,
+        scopes: ['openid', 'profile', 'email'],
+        responseType: AuthSession.ResponseType.IdToken,
+        usePKCE: false, // Google rejects PKCE for Implicit Flow (id_token)
         extraParams: {
-          access_type: 'offline',
-          include_granted_scopes: 'true',
-          ...(useProxy ? { response_mode: 'fragment', nonce: String(Date.now()) } : {}),
+          nonce: Math.random().toString(36).substring(7),
         },
-        usePKCE: !useProxy, // PKCE only needed for code flow
       });
 
       const discovery = {
@@ -51,45 +54,19 @@ class AuthService {
       };
 
       console.log('[Auth] redirectUri =>', redirectUri);
-      console.log('[Auth] useProxy =>', useProxy);
-      console.log('[Auth] clientId (web) =>', clientId?.slice(0, 8) + '...');
-      const result = await request.promptAsync(discovery, { useProxy });
-      
+      const result = await request.promptAsync(discovery);
+
       if (result.type === 'dismiss') {
         throw new Error('Authentication was cancelled by user');
       }
 
       if (result.type === 'success') {
-        let idToken: string | undefined;
-        if (useProxy) {
-          idToken = (result.params as any)?.id_token;
-          if (!idToken) throw new Error('No ID token returned in proxy flow');
-        } else {
-          const { code } = result.params;
-          if (!code) throw new Error('No authorization code received');
-          // Exchange authorization code for tokens
-          let tokenResponse;
-          try {
-            tokenResponse = await AuthSession.exchangeCodeAsync(
-              {
-                code,
-                clientId,
-                redirectUri,
-                extraParams: { code_verifier: request.codeVerifier as string },
-              },
-              discovery
-            );
-          } catch (tokenErr: any) {
-            console.error('❌ Token exchange error:', tokenErr);
-            throw new Error(tokenErr?.message || 'Failed to exchange authorization code');
-          }
-          if (!tokenResponse.idToken) throw new Error('No ID token received from Google');
-          idToken = tokenResponse.idToken;
-        }
+        const idToken = result.params.id_token;
+        if (!idToken) throw new Error('No ID token returned');
 
         // Decode ID token to get user info (no backend needed)
-        const decodedToken: any = jwtDecode(idToken as string);
-        
+        const decodedToken: any = jwtDecode(idToken);
+
         const user: AuthUser = {
           uid: decodedToken.sub || decodedToken.user_id || `google_${Date.now()}`,
           email: decodedToken.email || null,
@@ -99,7 +76,7 @@ class AuthService {
 
         // Store user data and ID token locally
         await AsyncStorage.setItem(this.USER_KEY, JSON.stringify(user));
-        await AsyncStorage.setItem(this.ID_TOKEN_KEY, idToken as string);
+        await AsyncStorage.setItem(this.ID_TOKEN_KEY, idToken);
 
         return user;
       } else if (result.type === 'cancel') {

@@ -1,5 +1,6 @@
+import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
-import { TouchableOpacity, Text, StyleSheet, Alert, View, ActivityIndicator } from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 
 interface GoogleSignInButtonProps {
@@ -7,9 +8,9 @@ interface GoogleSignInButtonProps {
   onError?: (error: string) => void;
 }
 
-export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({ 
-  onSuccess, 
-  onError 
+export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
+  onSuccess,
+  onError
 }) => {
   const { signInWithGoogle, loading } = useAuth();
 
@@ -37,7 +38,15 @@ export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
   }
 
   return (
-    <TouchableOpacity style={styles.button} onPress={handleSignIn} disabled={loading}>
+    <TouchableOpacity
+      style={styles.button}
+      onPress={handleSignIn}
+      disabled={loading}
+      activeOpacity={0.8}
+    >
+      <View style={styles.iconContainer}>
+        <Ionicons name="logo-google" size={20} color="white" />
+      </View>
       <Text style={styles.buttonText}>Sign in with Google</Text>
     </TouchableOpacity>
   );
@@ -48,10 +57,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#4285F4',
     paddingVertical: 12,
     paddingHorizontal: 24,
-    borderRadius: 8,
+    borderRadius: 12,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    minWidth: 200,
+    minWidth: 240,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  iconContainer: {
+    marginRight: 12,
   },
   buttonText: {
     color: 'white',

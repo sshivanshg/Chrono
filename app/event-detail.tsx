@@ -1,5 +1,6 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   Dimensions,
   Image,
@@ -18,10 +19,10 @@ const { width, height } = Dimensions.get('window');
 export default function EventDetailScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { events } = useEvents();
-  
+  const { events, deleteEvent } = useEvents();
+
   const eventId = params.eventId as string;
-  
+
   // Handle mock events
   const getMockEvent = (id: string) => {
     const mockEvents = {
@@ -46,6 +47,13 @@ export default function EventDetailScreen() {
   };
 
   const event = eventId.startsWith('mock-') ? getMockEvent(eventId) : events.find(e => e.id === eventId);
+
+  const initialConfirm = useMemo(
+    () => params.confirmDelete === 'true' && !eventId.startsWith('mock-'),
+    [params.confirmDelete, eventId]
+  );
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(initialConfirm);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   if (!event) {
     return (
@@ -74,7 +82,7 @@ export default function EventDetailScreen() {
     const now = new Date();
     const diffTime = date.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     if (diffDays < 0) return 'PAST';
     if (diffDays === 0) return 'TODAY';
     if (diffDays === 1) return 'TOMORROW';
@@ -84,31 +92,43 @@ export default function EventDetailScreen() {
     return `IN ${Math.ceil(diffDays / 365)} YEARS`;
   };
 
+  const handleConfirmDelete = async () => {
+    if (!event || isDeleting || eventId.startsWith('mock-')) return;
+    try {
+      setIsDeleting(true);
+      await deleteEvent(event.id);
+      setShowDeleteConfirm(false);
+      router.replace('/(tabs)');
+    } catch (error) {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
-      
+
       {/* Background Image */}
-      <Image 
-        source={{ uri: event.imageUrl || 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=300&h=200&fit=crop' }} 
+      <Image
+        source={{ uri: event.imageUrl || 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=300&h=200&fit=crop' }}
         style={styles.backgroundImage}
         resizeMode="cover"
       />
-      
+
       {/* Dark overlay for better text readability */}
       <View style={styles.overlay} />
-      
+
       <AnimatedScreen>
         {/* Top Navigation */}
         <View style={styles.topNavigation}>
           <TouchableOpacity style={styles.topButton} onPress={() => router.replace('/(tabs)')}>
             <Text style={styles.topButtonText}>✕</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity style={styles.shareButton}>
             <Text style={styles.shareButtonText}>Share</Text>
           </TouchableOpacity>
-          
+
           <TouchableOpacity
             style={styles.menuButton}
             onPress={() =>
@@ -128,31 +148,65 @@ export default function EventDetailScreen() {
             <Text style={styles.menuButtonText}>⋯</Text>
           </TouchableOpacity>
         </View>
-        
+
         {/* Main Content */}
         <View style={styles.contentContainer}>
           {/* Timeframe */}
           <Text style={styles.timeframeText}>
             {eventId.startsWith('mock-') ? (event as any).timeframe : getTimeframe(event.date)}
           </Text>
-          
+
           {/* Event Title */}
           <Text style={styles.eventTitle}>{event.title}</Text>
-          
+
           {/* Date Pill */}
           <View style={styles.datePill}>
             <Text style={styles.dateText}>{formatDate(event.date)}</Text>
           </View>
         </View>
-        
-        {/* Bottom Bar */}
-        <View style={styles.bottomBar}>
-          <View style={styles.bottomContent}>
-            <Text style={styles.bottomIcon}>⌃</Text>
-            <Text style={styles.bottomText}>SNIPPETS</Text>
+
+      </AnimatedScreen>
+
+      {/* Bottom Bar */}
+      <View style={styles.bottomBar}>
+        <View style={styles.bottomContent}>
+          <Text style={styles.bottomIcon}>⌃</Text>
+          <Text style={styles.bottomText}>SNIPPETS</Text>
+        </View>
+      </View>
+
+      {showDeleteConfirm && (
+        <View style={styles.deleteOverlay}>
+          <View style={styles.deleteCard}>
+            <View style={styles.deleteIconCircle}>
+              <Ionicons name="trash-outline" size={28} color="#ff3b30" />
+            </View>
+            <Text style={styles.deleteTitle}>
+              Are you sure you want to delete &quot;{event.title}&quot;?
+            </Text>
+            <Text style={styles.deleteSubtitle}>This action cannot be undone.</Text>
+
+            <View style={styles.deleteButtonsRow}>
+              <TouchableOpacity
+                style={styles.deleteCancelButton}
+                onPress={() => setShowDeleteConfirm(false)}
+                disabled={isDeleting}
+              >
+                <Text style={styles.deleteCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.deleteConfirmButton}
+                onPress={handleConfirmDelete}
+                disabled={isDeleting}
+              >
+                <Text style={styles.deleteConfirmText}>
+                  {isDeleting ? 'Deleting…' : 'Delete event'}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-      </AnimatedScreen>
+      )}
     </SafeAreaView>
   );
 }
@@ -285,6 +339,81 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
     letterSpacing: 1,
+  },
+  deleteOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    paddingBottom: 40,
+    zIndex: 50,
+  },
+  deleteCard: {
+    width: '92%',
+    backgroundColor: '#fff',
+    borderRadius: 28,
+    paddingHorizontal: 24,
+    paddingTop: 28,
+    paddingBottom: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 10,
+  },
+  deleteIconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(255,59,48,0.08)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  deleteTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#000',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  deleteSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  deleteButtonsRow: {
+    flexDirection: 'row',
+    width: '100%',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  deleteCancelButton: {
+    flex: 1,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: '#d0d0d0',
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  deleteCancelText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000',
+  },
+  deleteConfirmButton: {
+    flex: 1.2,
+    borderRadius: 24,
+    backgroundColor: '#000',
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  deleteConfirmText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
   },
   errorContainer: {
     flex: 1,

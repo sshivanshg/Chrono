@@ -1,17 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import React, { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  TextInput,
+  Alert,
   Modal,
   SafeAreaView,
   ScrollView,
-  Alert,
+  StyleSheet,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { Event } from '../types';
 import { useEvents } from '../contexts/EventContext';
+import { Event } from '../types';
+import { ThemedText } from './themed-text';
+import { DateSection, InputSection, ToggleSection } from './ui/FormComponents';
 
 interface EventModalProps {
   visible: boolean;
@@ -29,6 +30,10 @@ export default function EventModal({ visible, onClose, selectedDate, event }: Ev
   const [endTime, setEndTime] = useState('10:00');
   const [location, setLocation] = useState('');
   const [isEditing, setIsEditing] = useState(false);
+
+  const backgroundColor = useThemeColor({}, 'background');
+  const borderColor = useThemeColor({}, 'border');
+  const tintColor = useThemeColor({}, 'tint');
 
   useEffect(() => {
     if (event) {
@@ -96,125 +101,83 @@ export default function EventModal({ visible, onClose, selectedDate, event }: Ev
     }
   };
 
-  const formatTime = (time: string) => {
-    const [hours, minutes] = time.split(':');
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const displayHour = hour % 12 || 12;
-    return `${displayHour}:${minutes} ${ampm}`;
-  };
-
   return (
     <Modal visible={visible} animationType="slide" presentationStyle="pageSheet">
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor }]}>
         {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={onClose} style={styles.cancelButton}>
-            <Text style={styles.cancelText}>Cancel</Text>
+        <View style={[styles.header, { borderBottomColor: borderColor }]}>
+          <TouchableOpacity onPress={onClose} style={styles.headerButton}>
+            <ThemedText style={{ color: tintColor, fontSize: 16 }}>Cancel</ThemedText>
           </TouchableOpacity>
-          <Text style={styles.title}>{isEditing ? 'Edit Event' : 'New Event'}</Text>
-          <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
-            <Text style={styles.saveText}>Save</Text>
+          <ThemedText type="subtitle">{isEditing ? 'Edit Event' : 'New Event'}</ThemedText>
+          <TouchableOpacity onPress={handleSave} style={styles.headerButton}>
+            <ThemedText style={{ color: tintColor, fontSize: 16, fontWeight: '600' }}>Save</ThemedText>
           </TouchableOpacity>
         </View>
 
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {/* Date Display */}
-          <View style={styles.dateSection}>
-            <Text style={styles.dateLabel}>Date</Text>
-            <Text style={styles.dateText}>
-              {selectedDate.toLocaleDateString('en-US', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
-            </Text>
-          </View>
+          <DateSection date={selectedDate} />
 
-          {/* Title */}
-          <View style={styles.inputSection}>
-            <Text style={styles.inputLabel}>Title *</Text>
-            <TextInput
-              style={styles.textInput}
-              value={title}
-              onChangeText={setTitle}
-              placeholder="Event title"
-              placeholderTextColor="#999"
-            />
-          </View>
+          <InputSection
+            label="Title *"
+            value={title}
+            onChangeText={setTitle}
+            placeholder="Event title"
+          />
 
-          {/* Description */}
-          <View style={styles.inputSection}>
-            <Text style={styles.inputLabel}>Description</Text>
-            <TextInput
-              style={[styles.textInput, styles.textArea]}
-              value={description}
-              onChangeText={setDescription}
-              placeholder="Event description"
-              placeholderTextColor="#999"
-              multiline
-              numberOfLines={3}
-            />
-          </View>
+          <InputSection
+            label="Description"
+            value={description}
+            onChangeText={setDescription}
+            placeholder="Event description"
+            multiline
+          />
 
-          {/* All Day Toggle */}
-          <View style={styles.toggleSection}>
-            <Text style={styles.toggleLabel}>All Day</Text>
-            <TouchableOpacity
-              style={[styles.toggle, isAllDay && styles.toggleActive]}
-              onPress={() => setIsAllDay(!isAllDay)}
-            >
-              <View style={[styles.toggleThumb, isAllDay && styles.toggleThumbActive]} />
-            </TouchableOpacity>
-          </View>
+          <ToggleSection
+            label="All Day"
+            value={isAllDay}
+            onValueChange={setIsAllDay}
+          />
 
-          {/* Time Inputs */}
           {!isAllDay && (
-            <View style={styles.timeSection}>
+            <View style={[styles.timeSection, { borderBottomColor: borderColor }]}>
               <View style={styles.timeRow}>
-                <View style={styles.timeInput}>
-                  <Text style={styles.inputLabel}>Start Time</Text>
-                  <TextInput
-                    style={styles.textInput}
+                <View style={styles.timeInputContainer}>
+                  <InputSection
+                    label="Start Time"
                     value={startTime}
                     onChangeText={setStartTime}
                     placeholder="09:00"
-                    placeholderTextColor="#999"
+                    style={styles.timeInput}
                   />
                 </View>
-                <View style={styles.timeInput}>
-                  <Text style={styles.inputLabel}>End Time</Text>
-                  <TextInput
-                    style={styles.textInput}
+                <View style={styles.timeInputContainer}>
+                  <InputSection
+                    label="End Time"
                     value={endTime}
                     onChangeText={setEndTime}
                     placeholder="10:00"
-                    placeholderTextColor="#999"
+                    style={styles.timeInput}
                   />
                 </View>
               </View>
             </View>
           )}
 
-          {/* Location */}
-          <View style={styles.inputSection}>
-            <Text style={styles.inputLabel}>Location</Text>
-            <TextInput
-              style={styles.textInput}
-              value={location}
-              onChangeText={setLocation}
-              placeholder="Event location"
-              placeholderTextColor="#999"
-            />
-          </View>
+          <InputSection
+            label="Location"
+            value={location}
+            onChangeText={setLocation}
+            placeholder="Event location"
+          />
 
-          {/* Delete Button (only for editing) */}
           {isEditing && (
             <TouchableOpacity style={styles.deleteButton} onPress={handleDelete}>
-              <Text style={styles.deleteText}>Delete Event</Text>
+              <ThemedText style={styles.deleteText}>Delete Event</ThemedText>
             </TouchableOpacity>
           )}
+
+          <View style={{ height: 40 }} />
         </ScrollView>
       </SafeAreaView>
     </Modal>
@@ -224,7 +187,6 @@ export default function EventModal({ visible, onClose, selectedDate, event }: Ev
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
   },
   header: {
     flexDirection: 'row',
@@ -233,124 +195,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
-  cancelButton: {
+  headerButton: {
     paddingVertical: 8,
-    paddingHorizontal: 12,
-  },
-  cancelText: {
-    fontSize: 16,
-    color: '#007AFF',
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#000',
-  },
-  saveButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-  },
-  saveText: {
-    fontSize: 16,
-    color: '#007AFF',
-    fontWeight: '600',
+    paddingHorizontal: 4,
   },
   content: {
     flex: 1,
     paddingHorizontal: 20,
   },
-  dateSection: {
-    paddingVertical: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  dateLabel: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 8,
-  },
-  dateText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000',
-  },
-  inputSection: {
-    paddingVertical: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  inputLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
-    marginBottom: 12,
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: '#000',
-    backgroundColor: '#fafafa',
-  },
-  textArea: {
-    height: 80,
-    textAlignVertical: 'top',
-  },
-  toggleSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
-  },
-  toggleLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
-  },
-  toggle: {
-    width: 50,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: '#e0e0e0',
-    justifyContent: 'center',
-    paddingHorizontal: 2,
-  },
-  toggleActive: {
-    backgroundColor: '#007AFF',
-  },
-  toggleThumb: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  toggleThumbActive: {
-    alignSelf: 'flex-end',
-  },
   timeSection: {
-    paddingVertical: 20,
+    paddingVertical: 0,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   timeRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    gap: 10,
+  },
+  timeInputContainer: {
+    flex: 1,
   },
   timeInput: {
-    flex: 1,
-    marginHorizontal: 5,
+    borderBottomWidth: 0,
+    paddingVertical: 20,
   },
   deleteButton: {
     backgroundColor: '#FF3B30',

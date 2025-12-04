@@ -1,50 +1,63 @@
+import { ThemedText } from '@/components/themed-text';
+import { ActionSheetItem } from '@/components/ui/ActionSheetItem';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
-import { Alert, Animated, Easing, Image, Pressable, Share, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import {
+  Alert,
+  Image,
+  Pressable,
+  Share,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import Animated, {
+  Easing,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming
+} from 'react-native-reanimated';
 import { useEvents } from '../contexts/EventContext';
 
 export default function EventActionsScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { updateEvent, deleteEvent } = useEvents();
+  const { updateEvent } = useEvents();
   const eventId = (params.eventId as string) || '';
   const eventTitle = (params.eventTitle as string) || '';
   const selectedDate = (params.selectedDate as string) || '';
   const isAllDay = params.isAllDay === 'true';
   const repeats = params.repeats === 'true';
   const selectedImage = (params.selectedImage as string) || '';
-  
+
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [editedTitle, setEditedTitle] = useState(eventTitle);
 
-  // Animations for smooth entrance
-  const backdropOpacity = useRef(new Animated.Value(0)).current;
-  const sheetTranslateY = useRef(new Animated.Value(-24)).current; // slight drop from top
+  // Reanimated values
+  const backdropOpacity = useSharedValue(0);
+  const sheetTranslateY = useSharedValue(24);
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.timing(backdropOpacity, {
-        toValue: 0.35,
-        duration: 200,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
-      }),
-      Animated.timing(sheetTranslateY, {
-        toValue: 0,
-        duration: 220,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, [backdropOpacity, sheetTranslateY]);
+    backdropOpacity.value = withTiming(0.35, { duration: 200 });
+    sheetTranslateY.value = withTiming(0, { duration: 220, easing: Easing.out(Easing.cubic) });
+  }, []);
+
+  const backdropStyle = useAnimatedStyle(() => ({
+    opacity: backdropOpacity.value,
+  }));
+
+  const sheetStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: sheetTranslateY.value }],
+  }));
 
   const handleEditTitle = async () => {
     if (!eventId) {
       Alert.alert('Error', 'Event ID not found');
       return;
     }
-    
+
     if (editedTitle.trim() && editedTitle !== eventTitle) {
       try {
         await updateEvent(eventId, { title: editedTitle.trim() });
@@ -127,28 +140,10 @@ export default function EventActionsScreen() {
       Alert.alert('Error', 'Event ID not found');
       return;
     }
-
-    Alert.alert(
-      'Delete Event',
-      'Are you sure you want to delete this event? This action cannot be undone.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await deleteEvent(eventId);
-              Alert.alert('Success', 'Event deleted', [
-                { text: 'OK', onPress: () => router.replace('/(tabs)') }
-              ]);
-            } catch (error) {
-              Alert.alert('Error', 'Failed to delete event');
-            }
-          },
-        },
-      ]
-    );
+    router.replace({
+      pathname: '/event-detail',
+      params: { eventId, confirmDelete: 'true' },
+    });
   };
 
   return (
@@ -156,7 +151,6 @@ export default function EventActionsScreen() {
       {!!selectedImage && (
         <>
           <Image source={{ uri: selectedImage }} style={styles.bgImage} blurRadius={30} />
-          {/* Soft tint picked from image (white veil lets image colors bleed through) */}
           <View style={styles.bgOverlay} />
         </>
       )}
@@ -164,19 +158,20 @@ export default function EventActionsScreen() {
       {/* Close button top-right */}
       <View style={styles.topRightClose}>
         <TouchableOpacity style={styles.closeButton} onPress={() => router.back()}>
-          <Text style={styles.closeIcon}>✕</Text>
+          <ThemedText style={styles.closeIcon}>✕</ThemedText>
         </TouchableOpacity>
       </View>
 
-      <Animated.View style={[styles.animatedBackdrop, { opacity: backdropOpacity }]}>
+      <Animated.View style={[styles.animatedBackdrop, backdropStyle]}>
         <Pressable style={styles.backdrop} onPress={() => router.back()} />
       </Animated.View>
 
-      <Animated.View style={[styles.sheetContainer, { transform: [{ translateY: sheetTranslateY }] }]}>
+      <Animated.View style={[styles.sheetContainer, sheetStyle]}>
         <View style={styles.sheetHandle} />
 
-        <TouchableOpacity 
-          style={styles.sheetItem} 
+        <ActionSheetItem
+          label="Edit Title"
+          icon={<ThemedText style={{ fontWeight: '700', color: '#111' }}>T</ThemedText>}
           onPress={() => {
             if (eventId) {
               setIsEditingTitle(true);
@@ -184,11 +179,8 @@ export default function EventActionsScreen() {
               Alert.alert('Error', 'Cannot edit title: Event ID not found');
             }
           }}
-        >
-          <View style={styles.iconBox}><Text style={styles.iconText}>T</Text></View>
-          <Text style={styles.sheetItemText}>Edit Title</Text>
-        </TouchableOpacity>
-        
+        />
+
         {isEditingTitle && (
           <View style={styles.editTitleContainer}>
             <TextInput
@@ -199,104 +191,107 @@ export default function EventActionsScreen() {
               autoFocus
             />
             <View style={styles.editTitleActions}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.cancelButton}
                 onPress={() => {
                   setIsEditingTitle(false);
                   setEditedTitle(eventTitle);
                 }}
               >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
+                <ThemedText style={styles.cancelButtonText}>Cancel</ThemedText>
               </TouchableOpacity>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.saveButton}
                 onPress={handleEditTitle}
               >
-                <Text style={styles.saveButtonText}>Save</Text>
+                <ThemedText style={styles.saveButtonText}>Save</ThemedText>
               </TouchableOpacity>
             </View>
           </View>
         )}
 
-        <TouchableOpacity
-          style={styles.sheetItem}
+        <ActionSheetItem
+          label="Edit Date"
+          icon={<Ionicons name="calendar-outline" size={18} color="#111" />}
           onPress={() => {
             router.replace({
               pathname: '/add-date',
-              params: { 
+              params: {
                 eventId,
-                selectedDate, 
-                isAllDay: String(isAllDay), 
-                repeats: String(repeats), 
-                eventName: eventTitle, 
-                from: 'actions' 
+                selectedDate,
+                isAllDay: String(isAllDay),
+                repeats: String(repeats),
+                eventName: eventTitle,
+                from: 'actions'
               },
             });
           }}
-        >
-          <View style={styles.iconBox}><Ionicons name="calendar-outline" size={18} color="#111" /></View>
-          <Text style={styles.sheetItemText}>Edit Date</Text>
-        </TouchableOpacity>
+        />
 
-        {/* PRO row */ }
-        <View style={[styles.sheetItem, styles.disabledRow]}>
-          <View style={styles.iconBox}><Ionicons name="calendar-outline" size={18} color="#111" /></View>
-          <Text style={[styles.sheetItemText, styles.disabledText]}>Countdown Format</Text>
-          <View style={styles.proBadge}><Text style={styles.proBadgeText}>PRO</Text></View>
-        </View>
+        <ActionSheetItem
+          label="Countdown Format"
+          icon={<Ionicons name="calendar-outline" size={18} color="#111" />}
+          isPro
+          disabled
+        />
 
-        <TouchableOpacity style={styles.sheetItem} onPress={handleEditCategory}>
-          <View style={styles.iconBox}><MaterialCommunityIcons name="format-list-bulleted" size={18} color="#111" /></View>
-          <Text style={styles.sheetItemText}>Edit Category</Text>
-        </TouchableOpacity>
+        <ActionSheetItem
+          label="Edit Category"
+          icon={<MaterialCommunityIcons name="format-list-bulleted" size={18} color="#111" />}
+          onPress={handleEditCategory}
+        />
 
-        {/* PRO row */ }
-        <View style={[styles.sheetItem, styles.disabledRow]}>
-          <View style={styles.iconBox}><MaterialCommunityIcons name="format-font" size={18} color="#111" /></View>
-          <Text style={[styles.sheetItemText, styles.disabledText]}>Edit Font</Text>
-          <View style={styles.proBadge}><Text style={styles.proBadgeText}>PRO</Text></View>
-        </View>
+        <ActionSheetItem
+          label="Edit Font"
+          icon={<MaterialCommunityIcons name="format-font" size={18} color="#111" />}
+          isPro
+          disabled
+        />
 
-        <TouchableOpacity
-          style={styles.sheetItem}
+        <ActionSheetItem
+          label="Change Image"
+          icon={<MaterialCommunityIcons name="image-outline" size={18} color="#111" />}
           onPress={() => {
             router.replace({
               pathname: '/add-photo',
-              params: { 
+              params: {
                 eventId,
-                eventName: eventTitle, 
-                selectedDate, 
-                isAllDay: String(isAllDay), 
-                repeats: String(repeats), 
+                eventName: eventTitle,
+                selectedDate,
+                isAllDay: String(isAllDay),
+                repeats: String(repeats),
                 selectedImage,
-                from: 'actions' 
+                from: 'actions'
               },
             });
           }}
-        >
-          <View style={styles.iconBox}><MaterialCommunityIcons name="image-outline" size={18} color="#111" /></View>
-          <Text style={styles.sheetItemText}>Change Image</Text>
-        </TouchableOpacity>
+        />
 
-        <TouchableOpacity style={styles.sheetItem} onPress={handleAdjustImage}>
-          <View style={styles.iconBox}><MaterialCommunityIcons name="crop" size={18} color="#111" /></View>
-          <Text style={styles.sheetItemText}>Adjust Image</Text>
-        </TouchableOpacity>
+        <ActionSheetItem
+          label="Adjust Image"
+          icon={<MaterialCommunityIcons name="crop" size={18} color="#111" />}
+          onPress={handleAdjustImage}
+        />
 
-        <TouchableOpacity style={styles.sheetItem} onPress={handleInviteFriends}>
-          <View style={styles.iconBox}><MaterialCommunityIcons name="account-plus-outline" size={18} color="#111" /></View>
-          <Text style={styles.sheetItemText}>Invite Friends</Text>
-        </TouchableOpacity>
+        <ActionSheetItem
+          label="Invite Friends"
+          icon={<MaterialCommunityIcons name="account-plus-outline" size={18} color="#111" />}
+          onPress={handleInviteFriends}
+        />
 
-        <TouchableOpacity style={styles.sheetItem} onPress={handleAddSnippet}>
-          <View style={styles.iconBox}><MaterialCommunityIcons name="sticker-plus-outline" size={18} color="#111" /></View>
-          <Text style={styles.sheetItemText}>Add Snippet</Text>
-        </TouchableOpacity>
+        <ActionSheetItem
+          label="Add Snippet"
+          icon={<MaterialCommunityIcons name="sticker-plus-outline" size={18} color="#111" />}
+          onPress={handleAddSnippet}
+        />
 
-        <TouchableOpacity style={[styles.sheetItem, styles.sheetItemDestructive]} onPress={handleDelete}>
-          <View style={styles.iconBox}><Ionicons name="trash-outline" size={18} color="#E53935" /></View>
-          <Text style={[styles.sheetItemText, styles.sheetDestructiveText]}>Delete</Text>
-        </TouchableOpacity>
+        <ActionSheetItem
+          label="Delete"
+          icon={<Ionicons name="trash-outline" size={18} color="#E53935" />}
+          onPress={handleDelete}
+          isDestructive
+          style={{ borderBottomWidth: 0 }}
+        />
       </Animated.View>
     </View>
   );
@@ -308,11 +303,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'flex-end',
-    // paddingTop: 220,
     paddingBottom: 10,
   },
   animatedBackdrop: {
     ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.4)',
   },
   topRightClose: {
     position: 'absolute',
@@ -376,61 +371,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#ddd',
     marginTop: 8,
     marginBottom: 8,
-  },
-  sheetItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f2f2f2',
-    paddingHorizontal: 16,
-  },
-  iconBox: {
-    width: 28,
-    height: 28,
-    borderRadius: 6,
-    backgroundColor: '#F4F4F5',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  iconText: {
-    color: '#111',
-    fontWeight: '700',
-  },
-  sheetItemText: {
-    fontSize: 16,
-    color: '#000',
-    flex: 1,
-  },
-  disabledRow: {
-    opacity: 0.6,
-  },
-  disabledText: {
-    color: '#777',
-  },
-  proBadge: {
-    borderWidth: 1,
-    borderColor: '#e5e5e5',
-    borderRadius: 8,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    backgroundColor: '#f7f7f7',
-  },
-  proBadgeText: {
-    fontSize: 10,
-    color: '#9a9a9a',
-    fontWeight: '700',
-  },
-  sheetItemDestructive: {
-    borderBottomWidth: 0,
-    justifyContent: 'center',
-  },
-  sheetDestructiveText: {
-    color: '#E53935',
-    fontWeight: '600',
-    textAlign: 'center',
-    width: '100%',
   },
   editTitleContainer: {
     paddingHorizontal: 16,

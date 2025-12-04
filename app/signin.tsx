@@ -1,26 +1,28 @@
+import { ThemedText } from '@/components/themed-text';
+import { useThemeColor } from '@/hooks/use-theme-color';
 import React from 'react';
 import {
   ActivityIndicator,
   SafeAreaView,
   StatusBar,
   StyleSheet,
-  Text,
   View
 } from 'react-native';
 import { AnimatedScreen } from '../components/AnimatedScreen';
-import GoogleSignInButton from '../components/GoogleSignInButton';
+import { GoogleSignInButton } from '../components/GoogleSignInButton';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function SignInScreen() {
   const { loading } = useAuth();
+  const backgroundColor = useThemeColor({}, 'background');
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor }]}>
         <AnimatedScreen>
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#4285F4" />
-            <Text style={styles.loadingText}>Loading...</Text>
+            <ThemedText style={styles.loadingText}>Loading...</ThemedText>
           </View>
         </AnimatedScreen>
       </SafeAreaView>
@@ -28,15 +30,15 @@ export default function SignInScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+    <SafeAreaView style={[styles.container, { backgroundColor }]}>
+      <StatusBar barStyle="default" />
       <AnimatedScreen>
         <View style={styles.content}>
           <View style={styles.header}>
-            <Text style={styles.title}>Welcome to Chrono</Text>
-            <Text style={styles.subtitle}>Sign in to manage your events</Text>
+            <ThemedText type="title" style={styles.title}>Welcome to Chrono</ThemedText>
+            <ThemedText style={styles.subtitle}>Sign in to manage your events</ThemedText>
           </View>
-          
+
           <View style={styles.signInContainer}>
             <GoogleSignInButton />
           </View>
@@ -49,7 +51,6 @@ export default function SignInScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
   },
   loadingContainer: {
     flex: 1,
@@ -72,16 +73,12 @@ const styles = StyleSheet.create({
     marginBottom: 48,
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#1a1a1a',
     marginBottom: 8,
+    textAlign: 'center',
   },
   subtitle: {
-    fontSize: 18,
-    color: '#666666',
     textAlign: 'center',
-    lineHeight: 24,
+    opacity: 0.7,
   },
   signInContainer: {
     width: '100%',

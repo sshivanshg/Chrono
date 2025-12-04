@@ -1,9 +1,9 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 
 export const UserProfile: React.FC = () => {
-  const { authUser, signOut, loading } = useAuth();
+  const { user, signOut, loading } = useAuth();
 
   const handleSignOut = async () => {
     try {
@@ -13,21 +13,21 @@ export const UserProfile: React.FC = () => {
     }
   };
 
-  if (!authUser) {
+  if (!user) {
     return null;
   }
 
   return (
     <View style={styles.container}>
-      {authUser.photoURL && (
-        <Image source={{ uri: authUser.photoURL }} style={styles.avatar} />
+      {user.photoURL && (
+        <Image source={{ uri: user.photoURL }} style={styles.avatar} />
       )}
       <View style={styles.userInfo}>
-        <Text style={styles.displayName}>{authUser.displayName}</Text>
-        <Text style={styles.email}>{authUser.email}</Text>
+        <Text style={styles.displayName}>{user.displayName}</Text>
+        <Text style={styles.email}>{user.email}</Text>
       </View>
-      <TouchableOpacity 
-        style={styles.signOutButton} 
+      <TouchableOpacity
+        style={styles.signOutButton}
         onPress={handleSignOut}
         disabled={loading}
       >
