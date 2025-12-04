@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Alert,
   Image,
@@ -19,36 +19,28 @@ import { useAuth } from '../contexts/AuthContext';
 export default function SettingsScreen() {
   const router = useRouter();
   const { signOut, user } = useAuth();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
-  const handleLogout = () => {
-    Alert.alert(
-      'Sign Out',
-      'Are you sure you want to sign out?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Sign Out',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await signOut();
-              router.replace('/signin');
-            } catch (error) {
-              console.error('Sign out error:', error);
-              Alert.alert('Error', 'Failed to sign out. Please try again.');
-            }
-          },
-        },
-      ]
-    );
+  const handleLogout = async () => {
+    try {
+      setIsLoggingOut(true);
+      await signOut();
+      setShowLogoutConfirm(false);
+      router.replace('/signin');
+    } catch (error) {
+      console.error('Sign out error:', error);
+      Alert.alert('Error', 'Failed to sign out. Please try again.');
+      setIsLoggingOut(false);
+    }
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
-      
+
       {/* Blurred Background */}
-      <Image 
+      <Image
         source={{ uri: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&h=1200&fit=crop' }}
         style={styles.backgroundImage}
         blurRadius={20}
@@ -57,12 +49,12 @@ export default function SettingsScreen() {
         colors={['rgba(245, 245, 245, 0.85)', 'rgba(255, 255, 255, 0.95)']}
         style={styles.backgroundOverlay}
       />
-      
+
       <AnimatedScreen>
         {/* Header */}
         <View style={styles.header}>
-          <TouchableOpacity 
-            style={styles.backButton} 
+          <TouchableOpacity
+            style={styles.backButton}
             onPress={() => router.back()}
           >
             <Ionicons name="close" size={20} color="#fff" />
@@ -72,103 +64,143 @@ export default function SettingsScreen() {
         </View>
 
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Exclusive Offer Card */}
-        <View style={styles.offerCard}>
-          <View style={styles.offerIconContainer}>
-            <View style={styles.offerIconCircle}>
-              <Ionicons name="gift" size={24} color="#4A90E2" />
+          {/* Exclusive Offer Card */}
+          <View style={styles.offerCard}>
+            <View style={styles.offerIconContainer}>
+              <View style={styles.offerIconCircle}>
+                <Ionicons name="gift" size={24} color="#4A90E2" />
+              </View>
+            </View>
+            <View style={styles.offerContent}>
+              <Text style={styles.offerText}>An exclusive offer, just for you</Text>
+              <View style={styles.daysBadge}>
+                <Text style={styles.daysBadgeText}>3 days remaining</Text>
+              </View>
             </View>
           </View>
-          <View style={styles.offerContent}>
-            <Text style={styles.offerText}>An exclusive offer, just for you</Text>
-            <View style={styles.daysBadge}>
-              <Text style={styles.daysBadgeText}>3 days remaining</Text>
-            </View>
-          </View>
-        </View>
 
-        {/* Chrono Pro Card */}
-        <View style={styles.proCard}>
-          <View style={styles.proContent}>
-            <Text style={styles.proTitle}>Chrono Pro</Text>
-            <Text style={styles.proDescription}>
-              Get the full Chrono experience with unlimited events and all Pro features.
-            </Text>
-            <TouchableOpacity style={styles.proButton}>
-              <Text style={styles.proButtonText}>Become a Pro</Text>
+          {/* Chrono Pro Card */}
+          <View style={styles.proCard}>
+            <View style={styles.proContent}>
+              <Text style={styles.proTitle}>Chrono Pro</Text>
+              <Text style={styles.proDescription}>
+                Get the full Chrono experience with unlimited events and all Pro features.
+              </Text>
+              <TouchableOpacity style={styles.proButton}>
+                <Text style={styles.proButtonText}>Become a Pro</Text>
+              </TouchableOpacity>
+            </View>
+            <View style={styles.proGraphic}>
+              <View style={styles.proGraphicInner} />
+            </View>
+          </View>
+
+          {/* Settings List */}
+          <View style={styles.settingsList}>
+            {/* Preferences */}
+            <TouchableOpacity style={styles.settingItem}>
+              <Ionicons name="settings-outline" size={20} color="#000" style={styles.settingIcon} />
+              <Text style={styles.settingText}>Preferences</Text>
+              <Ionicons name="chevron-forward" size={20} color="#999" />
+            </TouchableOpacity>
+
+            {/* Night Mode */}
+            <TouchableOpacity style={styles.settingItem}>
+              <Ionicons name="moon-outline" size={20} color="#000" style={styles.settingIcon} />
+              <Text style={styles.settingText}>Night mode</Text>
+              <View style={styles.proTag}>
+                <Text style={styles.proTagText}>PRO</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#999" style={styles.settingArrow} />
+            </TouchableOpacity>
+
+            {/* Referrals */}
+            <TouchableOpacity style={styles.settingItem}>
+              <Ionicons name="paper-plane-outline" size={20} color="#000" style={styles.settingIcon} />
+              <Text style={styles.settingText}>Referrals</Text>
+              <Ionicons name="chevron-forward" size={20} color="#999" />
+            </TouchableOpacity>
+
+            {/* Connect your calendar */}
+            <TouchableOpacity style={styles.settingItem}>
+              <Ionicons name="calendar-outline" size={20} color="#000" style={styles.settingIcon} />
+              <Text style={styles.settingText}>Connect your calendar</Text>
+              <View style={styles.connectedIndicator}>
+                <View style={styles.connectedDot} />
+                <Ionicons name="chevron-forward" size={20} color="#999" />
+              </View>
+            </TouchableOpacity>
+
+            {/* Support */}
+            <TouchableOpacity style={styles.settingItem}>
+              <Ionicons name="help-circle-outline" size={20} color="#000" style={styles.settingIcon} />
+              <Text style={styles.settingText}>Support</Text>
+              <Ionicons name="chevron-forward" size={20} color="#999" />
+            </TouchableOpacity>
+
+            {/* Suggestions */}
+            <TouchableOpacity style={styles.settingItem}>
+              <Ionicons name="chatbubble-outline" size={20} color="#000" style={styles.settingIcon} />
+              <Text style={styles.settingText}>Suggestions</Text>
+              <Ionicons name="chevron-forward" size={20} color="#999" />
+            </TouchableOpacity>
+
+            {/* About */}
+            <TouchableOpacity style={styles.settingItem}>
+              <Ionicons name="information-circle-outline" size={20} color="#000" style={styles.settingIcon} />
+              <Text style={styles.settingText}>About</Text>
+              <Ionicons name="chevron-forward" size={20} color="#999" />
+            </TouchableOpacity>
+
+            {/* Rate app */}
+            <TouchableOpacity style={styles.settingItem}>
+              <Ionicons name="star-outline" size={20} color="#000" style={styles.settingIcon} />
+              <Text style={styles.settingText}>Rate app</Text>
+              <Ionicons name="chevron-forward" size={20} color="#999" />
+            </TouchableOpacity>
+
+            {/* Logout */}
+            <TouchableOpacity style={styles.settingItem} onPress={() => setShowLogoutConfirm(true)}>
+              <Ionicons name="log-out-outline" size={20} color="#ff3b30" style={styles.settingIcon} />
+              <Text style={[styles.settingText, { color: '#ff3b30' }]}>Log Out</Text>
+              <Ionicons name="chevron-forward" size={20} color="#999" />
             </TouchableOpacity>
           </View>
-          <View style={styles.proGraphic}>
-            <View style={styles.proGraphicInner} />
+        </ScrollView>
+      </AnimatedScreen>
+
+      {showLogoutConfirm && (
+        <View style={styles.logoutOverlay}>
+          <View style={styles.logoutCard}>
+            <View style={styles.logoutIconCircle}>
+              <Ionicons name="log-out-outline" size={28} color="#ff3b30" />
+            </View>
+            <Text style={styles.logoutTitle}>
+              Are you sure you want to log out?
+            </Text>
+            <Text style={styles.logoutSubtitle}>You will need to sign in again to access your events.</Text>
+
+            <View style={styles.logoutButtonsRow}>
+              <TouchableOpacity
+                style={styles.logoutCancelButton}
+                onPress={() => setShowLogoutConfirm(false)}
+                disabled={isLoggingOut}
+              >
+                <Text style={styles.logoutCancelText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.logoutConfirmButton}
+                onPress={handleLogout}
+                disabled={isLoggingOut}
+              >
+                <Text style={styles.logoutConfirmText}>
+                  {isLoggingOut ? 'Logging Out...' : 'Log Out'}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-
-        {/* Settings List */}
-        <View style={styles.settingsList}>
-          {/* Preferences */}
-          <TouchableOpacity style={styles.settingItem}>
-            <Ionicons name="settings-outline" size={20} color="#000" style={styles.settingIcon} />
-            <Text style={styles.settingText}>Preferences</Text>
-            <Ionicons name="chevron-forward" size={20} color="#999" />
-          </TouchableOpacity>
-
-          {/* Night Mode */}
-          <TouchableOpacity style={styles.settingItem}>
-            <Ionicons name="moon-outline" size={20} color="#000" style={styles.settingIcon} />
-            <Text style={styles.settingText}>Night mode</Text>
-            <View style={styles.proTag}>
-              <Text style={styles.proTagText}>PRO</Text>
-            </View>
-            <Ionicons name="chevron-forward" size={20} color="#999" style={styles.settingArrow} />
-          </TouchableOpacity>
-
-          {/* Referrals */}
-          <TouchableOpacity style={styles.settingItem}>
-            <Ionicons name="paper-plane-outline" size={20} color="#000" style={styles.settingIcon} />
-            <Text style={styles.settingText}>Referrals</Text>
-            <Ionicons name="chevron-forward" size={20} color="#999" />
-          </TouchableOpacity>
-
-          {/* Connect your calendar */}
-          <TouchableOpacity style={styles.settingItem}>
-            <Ionicons name="calendar-outline" size={20} color="#000" style={styles.settingIcon} />
-            <Text style={styles.settingText}>Connect your calendar</Text>
-            <View style={styles.connectedIndicator}>
-              <View style={styles.connectedDot} />
-              <Ionicons name="chevron-forward" size={20} color="#999" />
-            </View>
-          </TouchableOpacity>
-
-          {/* Support */}
-          <TouchableOpacity style={styles.settingItem}>
-            <Ionicons name="help-circle-outline" size={20} color="#000" style={styles.settingIcon} />
-            <Text style={styles.settingText}>Support</Text>
-            <Ionicons name="chevron-forward" size={20} color="#999" />
-          </TouchableOpacity>
-
-          {/* Suggestions */}
-          <TouchableOpacity style={styles.settingItem}>
-            <Ionicons name="chatbubble-outline" size={20} color="#000" style={styles.settingIcon} />
-            <Text style={styles.settingText}>Suggestions</Text>
-            <Ionicons name="chevron-forward" size={20} color="#999" />
-          </TouchableOpacity>
-
-          {/* About */}
-          <TouchableOpacity style={styles.settingItem}>
-            <Ionicons name="information-circle-outline" size={20} color="#000" style={styles.settingIcon} />
-            <Text style={styles.settingText}>About</Text>
-            <Ionicons name="chevron-forward" size={20} color="#999" />
-          </TouchableOpacity>
-
-          {/* Rate app */}
-          <TouchableOpacity style={styles.settingItem}>
-            <Ionicons name="star-outline" size={20} color="#000" style={styles.settingIcon} />
-            <Text style={styles.settingText}>Rate app</Text>
-            <Ionicons name="chevron-forward" size={20} color="#999" />
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-      </AnimatedScreen>
+      )}
     </SafeAreaView>
   );
 }
@@ -212,7 +244,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  
+
   screenTitle: {
     fontSize: 20,
     fontWeight: 'bold',
@@ -373,5 +405,80 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: '#4CAF50',
     marginRight: 8,
+  },
+  logoutOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    paddingBottom: 40,
+    zIndex: 50,
+  },
+  logoutCard: {
+    width: '92%',
+    backgroundColor: '#fff',
+    borderRadius: 28,
+    paddingHorizontal: 24,
+    paddingTop: 28,
+    paddingBottom: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 10,
+  },
+  logoutIconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: 'rgba(255,59,48,0.08)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  logoutTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#000',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  logoutSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  logoutButtonsRow: {
+    flexDirection: 'row',
+    width: '100%',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  logoutCancelButton: {
+    flex: 1,
+    borderRadius: 24,
+    borderWidth: 1,
+    borderColor: '#d0d0d0',
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  logoutCancelText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000',
+  },
+  logoutConfirmButton: {
+    flex: 1.2,
+    borderRadius: 24,
+    backgroundColor: '#ff3b30',
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  logoutConfirmText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
   },
 });
