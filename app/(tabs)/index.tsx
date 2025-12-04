@@ -121,7 +121,7 @@ export default function HomeScreen() {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
       <AnimatedScreen>
-        {/* Top bar */}
+        {/* Top bar (floating, transparent) */}
         <View style={styles.topBar}>
           <TouchableOpacity 
             style={styles.roundButton}
@@ -146,7 +146,11 @@ export default function HomeScreen() {
         </View>
 
         {/* Main Content */}
-        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
         {(() => {
           const filteredEvents = getFilteredEvents();
           
@@ -297,7 +301,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f5f5f7',
   },
   loadingContainer: {
     flex: 1,
@@ -322,6 +326,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 20,
     paddingBottom: 12,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 20,
+    backgroundColor: 'transparent',
   },
   roundButton: {
     width: 40,
@@ -417,6 +427,10 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  scrollContent: {
+    paddingTop: 84, // leave space for floating top bar
+    paddingBottom: 24,
   },
   eventsList: {
     paddingHorizontal: 20,
