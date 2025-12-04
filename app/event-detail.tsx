@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { AnimatedScreen } from '../components/AnimatedScreen';
 import { useEvents } from '../contexts/EventContext';
 
 const { width, height } = Dimensions.get('window');
@@ -97,59 +98,61 @@ export default function EventDetailScreen() {
       {/* Dark overlay for better text readability */}
       <View style={styles.overlay} />
       
-      {/* Top Navigation */}
-      <View style={styles.topNavigation}>
-        <TouchableOpacity style={styles.topButton} onPress={() => router.replace('/(tabs)')}>
-          <Text style={styles.topButtonText}>✕</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity style={styles.shareButton}>
-          <Text style={styles.shareButtonText}>Share</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity
-          style={styles.menuButton}
-          onPress={() =>
-            router.push({
-              pathname: '/event-actions',
-              params: {
-                eventId,
-                eventTitle: event.title,
-                selectedDate: event.date.toISOString(),
-                isAllDay: String((event as any).isAllDay ?? true),
-                repeats: String(!!(event as any).recurrence),
-                selectedImage: event.imageUrl || '',
-              },
-            })
-          }
-        >
-          <Text style={styles.menuButtonText}>⋯</Text>
-        </TouchableOpacity>
-      </View>
-      
-      {/* Main Content */}
-      <View style={styles.contentContainer}>
-        {/* Timeframe */}
-        <Text style={styles.timeframeText}>
-          {eventId.startsWith('mock-') ? (event as any).timeframe : getTimeframe(event.date)}
-        </Text>
-        
-        {/* Event Title */}
-        <Text style={styles.eventTitle}>{event.title}</Text>
-        
-        {/* Date Pill */}
-        <View style={styles.datePill}>
-          <Text style={styles.dateText}>{formatDate(event.date)}</Text>
+      <AnimatedScreen>
+        {/* Top Navigation */}
+        <View style={styles.topNavigation}>
+          <TouchableOpacity style={styles.topButton} onPress={() => router.replace('/(tabs)')}>
+            <Text style={styles.topButtonText}>✕</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity style={styles.shareButton}>
+            <Text style={styles.shareButtonText}>Share</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={styles.menuButton}
+            onPress={() =>
+              router.push({
+                pathname: '/event-actions',
+                params: {
+                  eventId,
+                  eventTitle: event.title,
+                  selectedDate: event.date.toISOString(),
+                  isAllDay: String((event as any).isAllDay ?? true),
+                  repeats: String(!!(event as any).recurrence),
+                  selectedImage: event.imageUrl || '',
+                },
+              })
+            }
+          >
+            <Text style={styles.menuButtonText}>⋯</Text>
+          </TouchableOpacity>
         </View>
-      </View>
-      
-      {/* Bottom Bar */}
-      <View style={styles.bottomBar}>
-        <View style={styles.bottomContent}>
-          <Text style={styles.bottomIcon}>⌃</Text>
-          <Text style={styles.bottomText}>SNIPPETS</Text>
+        
+        {/* Main Content */}
+        <View style={styles.contentContainer}>
+          {/* Timeframe */}
+          <Text style={styles.timeframeText}>
+            {eventId.startsWith('mock-') ? (event as any).timeframe : getTimeframe(event.date)}
+          </Text>
+          
+          {/* Event Title */}
+          <Text style={styles.eventTitle}>{event.title}</Text>
+          
+          {/* Date Pill */}
+          <View style={styles.datePill}>
+            <Text style={styles.dateText}>{formatDate(event.date)}</Text>
+          </View>
         </View>
-      </View>
+        
+        {/* Bottom Bar */}
+        <View style={styles.bottomBar}>
+          <View style={styles.bottomContent}>
+            <Text style={styles.bottomIcon}>⌃</Text>
+            <Text style={styles.bottomText}>SNIPPETS</Text>
+          </View>
+        </View>
+      </AnimatedScreen>
     </SafeAreaView>
   );
 }

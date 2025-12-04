@@ -1,17 +1,18 @@
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  SafeAreaView,
-  StatusBar,
-  Image,
   Dimensions,
+  Image,
+  SafeAreaView,
   ScrollView,
-  TextInput
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View
 } from 'react-native';
-import { useRouter, useLocalSearchParams } from 'expo-router';
+import { AnimatedScreen } from '../components/AnimatedScreen';
 import { useEvents } from '../contexts/EventContext';
 
 const { width } = Dimensions.get('window');
@@ -85,106 +86,106 @@ export default function EventPreviewScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
-      
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-          <Text style={styles.backButtonText}>← Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Event Preview</Text>
-        <TouchableOpacity
-          style={styles.menuButton}
-          onPress={() =>
-            router.push({
-              pathname: '/event-actions',
-              params: {
-                eventTitle,
-                selectedDate,
-                isAllDay: String(isAllDay),
-                repeats: String(repeats),
-                selectedImage,
-              },
-            })
-          }
-        >
-          <Text style={styles.menuIcon}>⋯</Text>
-        </TouchableOpacity>
-      </View>
+      <AnimatedScreen>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+            <Text style={styles.backButtonText}>← Back</Text>
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Event Preview</Text>
+          <TouchableOpacity
+            style={styles.menuButton}
+            onPress={() =>
+              router.push({
+                pathname: '/event-actions',
+                params: {
+                  eventTitle,
+                  selectedDate,
+                  isAllDay: String(isAllDay),
+                  repeats: String(repeats),
+                  selectedImage,
+                },
+              })
+            }
+          >
+            <Text style={styles.menuIcon}>⋯</Text>
+          </TouchableOpacity>
+        </View>
 
-      <ScrollView style={styles.scrollView}>
-        {/* Event Title Section */}
-        <View style={styles.titleSection}>
-          {isEditing ? (
-            <TextInput
-              style={styles.titleInput}
-              value={eventTitle}
-              onChangeText={setEventTitle}
-              placeholder="Event title"
-              autoFocus
+        <ScrollView style={styles.scrollView}>
+          {/* Event Title Section */}
+          <View style={styles.titleSection}>
+            {isEditing ? (
+              <TextInput
+                style={styles.titleInput}
+                value={eventTitle}
+                onChangeText={setEventTitle}
+                placeholder="Event title"
+                autoFocus
+              />
+            ) : (
+              <Text style={styles.eventTitle}>{eventTitle}</Text>
+            )}
+            <TouchableOpacity 
+              style={styles.editButton}
+              onPress={() => setIsEditing(!isEditing)}
+            >
+              <Text style={styles.editButtonText}>{isEditing ? 'Save' : 'Edit'}</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Image Card */}
+          <View style={styles.imageCard}>
+            <Image 
+              source={{ uri: selectedImage }} 
+              style={styles.eventImage} 
             />
+            <View style={styles.imageOverlay}>
+              <Text style={styles.dateText}>{formatDate(selectedDate)}</Text>
+              <Text style={styles.timeText}>
+                {isAllDay ? 'All Day' : '9:00 AM - 10:00 AM'}
+              </Text>
+            </View>
+          </View>
+
+          {/* Event Details */}
+          <View style={styles.detailsSection}>
+            <Text style={styles.sectionTitle}>Event Details</Text>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Date:</Text>
+              <Text style={styles.detailValue}>{formatDate(selectedDate)}</Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Time:</Text>
+              <Text style={styles.detailValue}>
+                {isAllDay ? 'All Day' : '9:00 AM - 10:00 AM'}
+              </Text>
+            </View>
+            <View style={styles.detailRow}>
+              <Text style={styles.detailLabel}>Repeats:</Text>
+              <Text style={styles.detailValue}>{repeats ? 'Yes' : 'No'}</Text>
+            </View>
+          </View>
+        </ScrollView>
+
+        {/* Done Button */}
+        <View style={styles.bottomSection}>
+          {eventCreated ? (
+            <View style={styles.successContainer}>
+            </View>
           ) : (
-            <Text style={styles.eventTitle}>{eventTitle}</Text>
+            <TouchableOpacity 
+              style={[styles.doneButton, isCreating && styles.doneButtonDisabled]} 
+              onPress={handleDone}
+              disabled={isCreating}
+            >
+              <Text style={styles.doneButtonText}>
+                {isCreating ? 'Creating...' : 'Done'}
+              </Text>
+            </TouchableOpacity>
           )}
-          <TouchableOpacity 
-            style={styles.editButton}
-            onPress={() => setIsEditing(!isEditing)}
-          >
-            <Text style={styles.editButtonText}>{isEditing ? 'Save' : 'Edit'}</Text>
-          </TouchableOpacity>
         </View>
-
-        {/* Image Card */}
-        <View style={styles.imageCard}>
-          <Image 
-            source={{ uri: selectedImage }} 
-            style={styles.eventImage} 
-          />
-          <View style={styles.imageOverlay}>
-            <Text style={styles.dateText}>{formatDate(selectedDate)}</Text>
-            <Text style={styles.timeText}>
-              {isAllDay ? 'All Day' : '9:00 AM - 10:00 AM'}
-            </Text>
-          </View>
-        </View>
-
-        {/* Event Details */}
-        <View style={styles.detailsSection}>
-          <Text style={styles.sectionTitle}>Event Details</Text>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Date:</Text>
-            <Text style={styles.detailValue}>{formatDate(selectedDate)}</Text>
-          </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Time:</Text>
-            <Text style={styles.detailValue}>
-              {isAllDay ? 'All Day' : '9:00 AM - 10:00 AM'}
-            </Text>
-          </View>
-          <View style={styles.detailRow}>
-            <Text style={styles.detailLabel}>Repeats:</Text>
-            <Text style={styles.detailValue}>{repeats ? 'Yes' : 'No'}</Text>
-          </View>
-        </View>
-
-      </ScrollView>
-
-      {/* Done Button */}
-      <View style={styles.bottomSection}>
-        {eventCreated ? (
-          <View style={styles.successContainer}>
-          </View>
-        ) : (
-          <TouchableOpacity 
-            style={[styles.doneButton, isCreating && styles.doneButtonDisabled]} 
-            onPress={handleDone}
-            disabled={isCreating}
-          >
-            <Text style={styles.doneButtonText}>
-              {isCreating ? 'Creating...' : 'Done'}
-            </Text>
-          </TouchableOpacity>
-        )}
-      </View>
+      </AnimatedScreen>
     </SafeAreaView>
   );
 }

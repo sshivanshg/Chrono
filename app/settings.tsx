@@ -13,6 +13,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { AnimatedScreen } from '../components/AnimatedScreen';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function SettingsScreen() {
@@ -57,19 +58,20 @@ export default function SettingsScreen() {
         style={styles.backgroundOverlay}
       />
       
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton} 
-          onPress={() => router.back()}
-        >
-          <Ionicons name="close" size={20} color="#fff" />
-        </TouchableOpacity>
-        <Text style={styles.screenTitle}>Settings</Text>
-        <View style={styles.placeholder} />
-      </View>
+      <AnimatedScreen>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.backButton} 
+            onPress={() => router.back()}
+          >
+            <Ionicons name="close" size={20} color="#fff" />
+          </TouchableOpacity>
+          <Text style={styles.screenTitle}>Settings</Text>
+          <View style={styles.placeholder} />
+        </View>
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {/* Exclusive Offer Card */}
         <View style={styles.offerCard}>
           <View style={styles.offerIconContainer}>
@@ -166,6 +168,7 @@ export default function SettingsScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+      </AnimatedScreen>
     </SafeAreaView>
   );
 }

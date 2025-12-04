@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native';
+import { AnimatedScreen } from '../../components/AnimatedScreen';
 import { useAuth } from '../../contexts/AuthContext';
 import { useEvents } from '../../contexts/EventContext';
 import { Event } from '../../types';
@@ -38,9 +39,11 @@ export default function HomeScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Loading events...</Text>
-        </View>
+        <AnimatedScreen>
+          <View style={styles.loadingContainer}>
+            <Text style={styles.loadingText}>Loading events...</Text>
+          </View>
+        </AnimatedScreen>
       </SafeAreaView>
     );
   }
@@ -115,38 +118,38 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
-      
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.menuButton}
-          onPress={() => router.push('/settings')}
-        >
-          <View style={styles.hamburgerIcon}>
-            <View style={styles.hamburgerLine} />
-            <View style={styles.hamburgerLine} />
-          </View>
-        </TouchableOpacity>
-        
-        <Text style={styles.appTitle}>Chrono</Text>
-        
-        <TouchableOpacity 
-          style={styles.addButton}
-          onPress={() => router.push('/add-event')}
-        >
-          <Ionicons name="calendar-outline" size={22} color="#fff" />
-        </TouchableOpacity>
-      </View>
+      <AnimatedScreen>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity 
+            style={styles.menuButton}
+            onPress={() => router.push('/settings')}
+          >
+            <View style={styles.hamburgerIcon}>
+              <View style={styles.hamburgerLine} />
+              <View style={styles.hamburgerLine} />
+            </View>
+          </TouchableOpacity>
+          
+          <Text style={styles.appTitle}>Chrono</Text>
+          
+          <TouchableOpacity 
+            style={styles.addButton}
+            onPress={() => router.push('/add-event')}
+          >
+            <Ionicons name="calendar-outline" size={22} color="#fff" />
+          </TouchableOpacity>
+        </View>
 
-      {/* Filter Button */}
-      <View style={styles.filterContainer}>
-        <TouchableOpacity style={styles.filterButton}>
-          <Text style={styles.filterButtonText}>All events</Text>
-        </TouchableOpacity>
-      </View>
+        {/* Filter Button */}
+        <View style={styles.filterContainer}>
+          <TouchableOpacity style={styles.filterButton}>
+            <Text style={styles.filterButtonText}>All events</Text>
+          </TouchableOpacity>
+        </View>
 
-      {/* Main Content */}
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {/* Main Content */}
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         {(() => {
           const filteredEvents = getFilteredEvents();
           
@@ -288,27 +291,28 @@ export default function HomeScreen() {
           </View>
           );
         })()}
-      </ScrollView>
+        </ScrollView>
 
-      {/* Bottom Filter */}
-      <View style={styles.bottomFilter}>
-        <TouchableOpacity 
-          style={[styles.filterTab, filter === 'previous' && styles.activeFilterTab]}
-          onPress={() => setFilter('previous')}
-        >
-          <Text style={[styles.filterTabText, filter === 'previous' && styles.activeFilterTabText]}>
-            Previous
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={[styles.filterTab, filter === 'upcoming' && styles.activeFilterTab]}
-          onPress={() => setFilter('upcoming')}
-        >
-          <Text style={[styles.filterTabText, filter === 'upcoming' && styles.activeFilterTabText]}>
-            Upcoming
-          </Text>
-        </TouchableOpacity>
-      </View>
+        {/* Bottom Filter */}
+        <View style={styles.bottomFilter}>
+          <TouchableOpacity 
+            style={[styles.filterTab, filter === 'previous' && styles.activeFilterTab]}
+            onPress={() => setFilter('previous')}
+          >
+            <Text style={[styles.filterTabText, filter === 'previous' && styles.activeFilterTabText]}>
+              Previous
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.filterTab, filter === 'upcoming' && styles.activeFilterTab]}
+            onPress={() => setFilter('upcoming')}
+          >
+            <Text style={[styles.filterTabText, filter === 'upcoming' && styles.activeFilterTabText]}>
+              Upcoming
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </AnimatedScreen>
     </SafeAreaView>
   );
 }

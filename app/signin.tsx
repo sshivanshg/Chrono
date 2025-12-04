@@ -1,14 +1,15 @@
 import React from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  SafeAreaView, 
+import {
+  ActivityIndicator,
+  SafeAreaView,
   StatusBar,
-  ActivityIndicator
+  StyleSheet,
+  Text,
+  View
 } from 'react-native';
-import { useAuth } from '../contexts/AuthContext';
+import { AnimatedScreen } from '../components/AnimatedScreen';
 import GoogleSignInButton from '../components/GoogleSignInButton';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function SignInScreen() {
   const { loading } = useAuth();
@@ -16,10 +17,12 @@ export default function SignInScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#4285F4" />
-          <Text style={styles.loadingText}>Loading...</Text>
-        </View>
+        <AnimatedScreen>
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#4285F4" />
+            <Text style={styles.loadingText}>Loading...</Text>
+          </View>
+        </AnimatedScreen>
       </SafeAreaView>
     );
   }
@@ -27,17 +30,18 @@ export default function SignInScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
-      
-      <View style={styles.content}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Welcome to Chrono</Text>
-          <Text style={styles.subtitle}>Sign in to manage your events</Text>
+      <AnimatedScreen>
+        <View style={styles.content}>
+          <View style={styles.header}>
+            <Text style={styles.title}>Welcome to Chrono</Text>
+            <Text style={styles.subtitle}>Sign in to manage your events</Text>
+          </View>
+          
+          <View style={styles.signInContainer}>
+            <GoogleSignInButton />
+          </View>
         </View>
-        
-        <View style={styles.signInContainer}>
-          <GoogleSignInButton />
-        </View>
-      </View>
+      </AnimatedScreen>
     </SafeAreaView>
   );
 }

@@ -1,13 +1,14 @@
+import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
-  View,
-  StyleSheet,
   SafeAreaView,
   StatusBar,
-  TouchableOpacity,
+  StyleSheet,
   Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { AnimatedScreen } from '../components/AnimatedScreen';
 import Calendar from '../components/Calendar';
 import EventModal from '../components/EventModal';
 import { useEvents } from '../contexts/EventContext';
@@ -39,9 +40,11 @@ export default function CalendarScreen() {
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Loading calendar...</Text>
-        </View>
+        <AnimatedScreen>
+          <View style={styles.loadingContainer}>
+            <Text style={styles.loadingText}>Loading calendar...</Text>
+          </View>
+        </AnimatedScreen>
       </SafeAreaView>
     );
   }
@@ -49,30 +52,31 @@ export default function CalendarScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
-      
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Text style={styles.backIcon}>←</Text>
-        </TouchableOpacity>
-        <Text style={styles.title}>Calendar</Text>
-        <View style={styles.placeholder} />
-      </View>
+      <AnimatedScreen>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Text style={styles.backIcon}>←</Text>
+          </TouchableOpacity>
+          <Text style={styles.title}>Calendar</Text>
+          <View style={styles.placeholder} />
+        </View>
 
-      {/* Calendar Component */}
-      <Calendar
-        events={events}
-        onDateSelect={handleDateSelect}
-        onEventSelect={handleEventSelect}
-      />
+        {/* Calendar Component */}
+        <Calendar
+          events={events}
+          onDateSelect={handleDateSelect}
+          onEventSelect={handleEventSelect}
+        />
 
-      {/* Event Modal */}
-      <EventModal
-        visible={showEventModal}
-        onClose={handleCloseModal}
-        selectedDate={selectedDate}
-        event={selectedEvent}
-      />
+        {/* Event Modal */}
+        <EventModal
+          visible={showEventModal}
+          onClose={handleCloseModal}
+          selectedDate={selectedDate}
+          event={selectedEvent}
+        />
+      </AnimatedScreen>
     </SafeAreaView>
   );
 }

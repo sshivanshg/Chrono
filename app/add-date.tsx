@@ -1,4 +1,4 @@
- import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Dimensions,
@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { AnimatedScreen } from '../components/AnimatedScreen';
 
 const { width } = Dimensions.get('window');
 const PICKER_ITEM_HEIGHT = 50;
@@ -174,26 +175,23 @@ export default function AddDateScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
-      
+      <AnimatedScreen>
+        {/* Secondary Header */}
+        <View style={styles.secondaryHeader}>
+          <TouchableOpacity style={styles.backButton} onPress={handleBack}>
+            <Text style={styles.backIcon}>←</Text>
+          </TouchableOpacity>
+          <Text style={styles.screenTitle}>Add date</Text>
+          <View style={styles.placeholder} />
+        </View>
 
-      
-
-      {/* Secondary Header */}
-      <View style={styles.secondaryHeader}>
-        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
-          <Text style={styles.backIcon}>←</Text>
-        </TouchableOpacity>
-        <Text style={styles.screenTitle}>Add date</Text>
-        <View style={styles.placeholder} />
-      </View>
-
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Date Picker Card */}
-        <View style={styles.datePickerCard}>
-          <Text style={styles.selectedDateText}>{formatDate(selectedDate)}</Text>
-          
-          {/* Date Picker */}
-          <View style={styles.datePickerContainer}>
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+          {/* Date Picker Card */}
+          <View style={styles.datePickerCard}>
+            <Text style={styles.selectedDateText}>{formatDate(selectedDate)}</Text>
+            
+            {/* Date Picker */}
+            <View style={styles.datePickerContainer}>
             <View style={styles.pickerColumn}>
               <Text style={styles.pickerLabel}>Day</Text>
               <View style={styles.pickerWheel}>
@@ -310,38 +308,39 @@ export default function AddDateScreen() {
                 </ScrollView>
               </View>
             </View>
+            </View>
           </View>
-        </View>
 
-        {/* All Day Toggle */}
-        <View style={styles.toggleCard}>
-          <Text style={styles.toggleLabel}>All Day</Text>
-          <TouchableOpacity 
-            style={[styles.toggle, isAllDay && styles.toggleActive]}
-            onPress={() => setIsAllDay(!isAllDay)}
-          >
-            <View style={[styles.toggleThumb, isAllDay && styles.toggleThumbActive]} />
+          {/* All Day Toggle */}
+          <View style={styles.toggleCard}>
+            <Text style={styles.toggleLabel}>All Day</Text>
+            <TouchableOpacity 
+              style={[styles.toggle, isAllDay && styles.toggleActive]}
+              onPress={() => setIsAllDay(!isAllDay)}
+            >
+              <View style={[styles.toggleThumb, isAllDay && styles.toggleThumbActive]} />
+            </TouchableOpacity>
+          </View>
+
+          {/* Repeats Toggle */}
+          <View style={styles.toggleCard}>
+            <Text style={styles.toggleLabel}>Repeats</Text>
+            <TouchableOpacity 
+              style={[styles.toggle, repeats && styles.toggleActive]}
+              onPress={() => setRepeats(!repeats)}
+            >
+              <View style={[styles.toggleThumb, repeats && styles.toggleThumbActive]} />
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+
+        {/* Continue Button */}
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
+            <Text style={styles.continueButtonText}>Continue</Text>
           </TouchableOpacity>
         </View>
-
-        {/* Repeats Toggle */}
-        <View style={styles.toggleCard}>
-          <Text style={styles.toggleLabel}>Repeats</Text>
-          <TouchableOpacity 
-            style={[styles.toggle, repeats && styles.toggleActive]}
-            onPress={() => setRepeats(!repeats)}
-          >
-            <View style={[styles.toggleThumb, repeats && styles.toggleThumbActive]} />
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-
-      {/* Continue Button */}
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
-          <Text style={styles.continueButtonText}>Continue</Text>
-        </TouchableOpacity>
-      </View>
+      </AnimatedScreen>
     </SafeAreaView>
   );
 }

@@ -14,7 +14,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { useEvents } from '../contexts/EventContext';
+import { AnimatedScreen } from '../components/AnimatedScreen';
 
 const { width } = Dimensions.get('window');
 
@@ -30,7 +30,6 @@ export default function AddPhotoScreen() {
   const selectedDate = params.selectedDate as string || '';
   const isAllDay = params.isAllDay === 'true';
   const repeats = params.repeats === 'true';
-  const { addEvent, loadEvents } = useEvents();
   
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [hasPermission, setHasPermission] = useState<boolean | null>(null);
@@ -164,42 +163,19 @@ export default function AddPhotoScreen() {
     }
   };
 
-  const [isCreating, setIsCreating] = useState(false);
-
-  const handleContinue = async () => {
-    if (!selectedImage) {
-      Alert.alert('No Image Selected', 'Please select an image for your event.');
-      return;
-    }
-
-    if (isCreating) return;
-
-    try {
-      setIsCreating(true);
-
-      const eventTitle = eventName || 'Untitled event';
-      const eventDate = selectedDate ? new Date(selectedDate) : new Date();
-
-      const newEventId = await addEvent({
-        userId: 'user1',
-        title: eventTitle,
-        description: `Event created on ${new Date().toLocaleDateString()}`,
-        date: eventDate,
-        isAllDay,
-        startTime: isAllDay ? undefined : '09:00',
-        endTime: isAllDay ? undefined : '10:00',
-        location: undefined,
-        imageUrl: selectedImage,
+  const handleContinue = () => {
+    if (selectedImage) {
+      // Navigate to event preview
+      router.push({
+        pathname: '/event-preview',
+        params: {
+          eventName: eventName,
+          selectedDate: selectedDate,
+          selectedImage: selectedImage,
+        }
       });
-
-      await loadEvents();
-
-      router.replace(`/event-detail?eventId=${newEventId}`);
-    } catch (error: any) {
-      console.error('Error creating event from photo screen:', error);
-      Alert.alert('Error', error?.message || 'Failed to create event. Please try again.');
-    } finally {
-      setIsCreating(false);
+    } else {
+      Alert.alert('No Image Selected', 'Please select an image for your event.');
     }
   };
 
@@ -215,80 +191,74 @@ export default function AddPhotoScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
-      
-
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-          <Text style={styles.backIcon}>←</Text>
-        </TouchableOpacity>
-        
-        <Text style={styles.title}>Add photo</Text>
-        
-        <View style={styles.placeholder} />
-      </View>
-
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-
-        <View style={styles.sectionCard}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Photo library</Text>
-            <TouchableOpacity style={styles.actionButton} onPress={handleSeeAll}>
-              <Text style={styles.actionButtonText}>See All</Text>
-            </TouchableOpacity>
-          </View>
+      <AnimatedScreen>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
+            <Text style={styles.backIcon}>←</Text>
+          </TouchableOpacity>
           
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.photosContainer}
-          >
-            {localPhotos.map((photo) => (
-              <TouchableOpacity
-                key={photo.id}
-                style={[
-                  styles.photoThumbnail,
-                  selectedImage === photo.url && styles.selectedPhoto
-                ]}
-                onPress={() => selectImage(photo.url)}
-              >
-                <Image source={{ uri: photo.url }} style={styles.thumbnailImage} />
-                {selectedImage === photo.url && (
-                  <View style={styles.selectedOverlay}>
-                    <Text style={styles.selectedIcon}>✓</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
+          <Text style={styles.title}>Add photo</Text>
+          
+          <View style={styles.placeholder} />
         </View>
 
-
-
-        {selectedImage && (
-          <View style={styles.previewSection}>
-            <Text style={styles.previewTitle}>Selected Image</Text>
-            <View style={styles.previewContainer}>
-              <Image source={{ uri: selectedImage }} style={styles.previewImage} />
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Photo library</Text>
+              <TouchableOpacity style={styles.actionButton} onPress={handleSeeAll}>
+                <Text style={styles.actionButtonText}>See All</Text>
+              </TouchableOpacity>
             </View>
+            
+            <ScrollView 
+              horizontal 
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.photosContainer}
+            >
+              {localPhotos.map((photo) => (
+                <TouchableOpacity
+                  key={photo.id}
+                  style={[
+                    styles.photoThumbnail,
+                    selectedImage === photo.url && styles.selectedPhoto
+                  ]}
+                  onPress={() => selectImage(photo.url)}
+                >
+                  <Image source={{ uri: photo.url }} style={styles.thumbnailImage} />
+                  {selectedImage === photo.url && (
+                    <View style={styles.selectedOverlay}>
+                      <Text style={styles.selectedIcon}>✓</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </View>
-        )}
-      </ScrollView>
 
+          {selectedImage && (
+            <View style={styles.previewSection}>
+              <Text style={styles.previewTitle}>Selected Image</Text>
+              <View style={styles.previewContainer}>
+                <Image source={{ uri: selectedImage }} style={styles.previewImage} />
+              </View>
+            </View>
+          )}
+        </ScrollView>
 
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity 
-          style={[
-            styles.continueButton,
-            (!selectedImage || isCreating) && styles.continueButtonDisabled
-          ]}
-          onPress={handleContinue}
-          disabled={!selectedImage || isCreating}
-        >
-          <Text style={styles.continueButtonText}>
-            {isCreating ? 'Creating...' : 'Continue'}
-          </Text>
-        </TouchableOpacity>
-      </View>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity 
+            style={[
+              styles.continueButton,
+              !selectedImage && styles.continueButtonDisabled
+            ]}
+            onPress={handleContinue}
+            disabled={!selectedImage}
+          >
+            <Text style={styles.continueButtonText}>Continue</Text>
+          </TouchableOpacity>
+        </View>
+      </AnimatedScreen>
     </SafeAreaView>
   );
 }

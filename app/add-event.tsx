@@ -1,17 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  TextInput,
-  SafeAreaView,
-  StatusBar,
-  ScrollView,
-  Dimensions,
-} from 'react-native';
-import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import React, { useEffect, useState } from 'react';
+import {
+  Dimensions,
+  SafeAreaView,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { AnimatedScreen } from '../components/AnimatedScreen';
 
 const { width } = Dimensions.get('window');
 
@@ -65,80 +66,81 @@ export default function AddEventScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
-      
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
-          <Text style={styles.closeIcon}>✕</Text>
-        </TouchableOpacity>
-        
-        <Text style={styles.title}>Add event</Text>
-        
-        <TouchableOpacity onPress={handleCalendarPress} style={styles.calendarButton}>
-          <Ionicons name="calendar-outline" size={20} color="#fff" />
-        </TouchableOpacity>
-      </View>
-
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Main Prompt */}
-        <View style={styles.promptSection}>
-          <Text style={styles.promptText}>Give your event a name.</Text>
+      <AnimatedScreen>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={handleClose} style={styles.closeButton}>
+            <Text style={styles.closeIcon}>✕</Text>
+          </TouchableOpacity>
+          
+          <Text style={styles.title}>Add event</Text>
+          
+          <TouchableOpacity onPress={handleCalendarPress} style={styles.calendarButton}>
+            <Ionicons name="calendar-outline" size={20} color="#fff" />
+          </TouchableOpacity>
         </View>
-
-        {/* Event Name Input */}
-        <View style={styles.inputSection}>
-          <View style={styles.inputContainer}>
-            <TextInput
-              style={styles.textInput}
-              value={eventName}
-              onChangeText={setEventName}
-              placeholder="Enter event name"
-              placeholderTextColor="#999"
-              maxLength={25}
-              autoFocus
-            />
-            <Text style={styles.characterCount}>
-              {eventName.length}/25
-            </Text>
+        
+        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+          {/* Main Prompt */}
+          <View style={styles.promptSection}>
+            <Text style={styles.promptText}>Give your event a name.</Text>
           </View>
+          
+          {/* Event Name Input */}
+          <View style={styles.inputSection}>
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={styles.textInput}
+                value={eventName}
+                onChangeText={setEventName}
+                placeholder="Enter event name"
+                placeholderTextColor="#999"
+                maxLength={25}
+                autoFocus
+              />
+              <Text style={styles.characterCount}>
+                {eventName.length}/25
+              </Text>
+            </View>
+          </View>
+          
+          {/* Event Suggestions */}
+          {filteredSuggestions.length > 0 && (
+            <View style={styles.suggestionsSection}>
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.suggestionsContainer}
+              >
+                {filteredSuggestions.map((suggestion, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.suggestionCard}
+                    onPress={() => handleSuggestionPress(suggestion.title)}
+                  >
+                    <Text style={styles.suggestionTitle}>{suggestion.title}</Text>
+                    <Text style={styles.suggestionTimeframe}>{suggestion.timeframe}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          )}
+        </ScrollView>
+        
+        {/* Continue Button */}
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity 
+            style={[
+              styles.continueButton,
+              !eventName.trim() && styles.continueButtonDisabled
+            ]}
+            onPress={handleContinue}
+            disabled={!eventName.trim()}
+          >
+            <Text style={styles.continueButtonText}>Continue</Text>
+          </TouchableOpacity>
         </View>
-
-        {/* Event Suggestions */}
-        {filteredSuggestions.length > 0 && (
-          <View style={styles.suggestionsSection}>
-            <ScrollView 
-              horizontal 
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.suggestionsContainer}
-            >
-              {filteredSuggestions.map((suggestion, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.suggestionCard}
-                  onPress={() => handleSuggestionPress(suggestion.title)}
-                >
-                  <Text style={styles.suggestionTitle}>{suggestion.title}</Text>
-                  <Text style={styles.suggestionTimeframe}>{suggestion.timeframe}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        )}
-      </ScrollView>
-
-      {/* Continue Button */}
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity 
-          style={[
-            styles.continueButton,
-            !eventName.trim() && styles.continueButtonDisabled
-          ]}
-          onPress={handleContinue}
-          disabled={!eventName.trim()}
-        >
-          <Text style={styles.continueButtonText}>Continue</Text>
-        </TouchableOpacity>
-      </View>
+      </AnimatedScreen>
     </SafeAreaView>
   );
 }
