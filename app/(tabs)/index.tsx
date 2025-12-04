@@ -1,24 +1,33 @@
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import {
   Dimensions,
   Image,
   SafeAreaView,
-  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from 'react-native';
+import Animated, {
+  Extrapolate,
+  interpolate,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  useSharedValue,
+} from 'react-native-reanimated';
+
 import { AnimatedScreen } from '../../components/AnimatedScreen';
 import { useAuth } from '../../contexts/AuthContext';
 import { useEvents } from '../../contexts/EventContext';
 import { Event } from '../../types';
 
 const { width } = Dimensions.get('window');
-
+const HERO_HEIGHT = 260;
+const CARD_HORIZONTAL_MARGIN = 16;
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -26,6 +35,28 @@ export default function HomeScreen() {
   const { events, loading: eventsLoading, loadEvents } = useEvents();
   const [filter, setFilter] = useState<'upcoming' | 'previous'>('upcoming');
   const [currentDate] = useState(new Date());
+
+  const scrollY = useSharedValue(0);
+
+  const onScroll = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
+
+  const heroAnimatedStyle = useAnimatedStyle(() => {
+    const translateY = interpolate(
+      scrollY.value,
+      [0, 80],
+      [0, -24],
+      Extrapolate.CLAMP
+    );
+    const scale = interpolate(scrollY.value, [0, 80], [1, 0.96], Extrapolate.CLAMP);
+
+    return {
+      transform: [{ translateY }, { scale }],
+    };
+  });
 
   // The event context will automatically handle loading events when they change
 
@@ -103,24 +134,12 @@ export default function HomeScreen() {
     );
   };
 
-  // Skip authentication for now - show main interface directly
-  // if (loading) {
-  //   return (
-  //     <SafeAreaView style={styles.container}>
-  //       <View style={styles.loadingContainer}>
-  //         <Text style={styles.loadingText}>Loading...</Text>
-  //       </View>
-  //     </SafeAreaView>
-  //   );
-  // }
-
-
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
       <AnimatedScreen>
-        {/* Header */}
-        <View style={styles.header}>
+        {/* Floating top controls */}
+        <View style={styles.topControlsContainer}>
           <TouchableOpacity 
             style={styles.menuButton}
             onPress={() => router.push('/settings')}
@@ -130,9 +149,11 @@ export default function HomeScreen() {
               <View style={styles.hamburgerLine} />
             </View>
           </TouchableOpacity>
-          
-          <Text style={styles.appTitle}>Chrono</Text>
-          
+
+          <View style={styles.allEventsPill}>
+            <Text style={styles.allEventsPillText}>All events</Text>
+          </View>
+
           <TouchableOpacity 
             style={styles.addButton}
             onPress={() => router.push('/add-event')}
@@ -141,47 +162,52 @@ export default function HomeScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Filter Button */}
-        <View style={styles.filterContainer}>
-          <TouchableOpacity style={styles.filterButton}>
-            <Text style={styles.filterButtonText}>All events</Text>
-          </TouchableOpacity>
-        </View>
-
         {/* Main Content */}
-        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <Animated.ScrollView
+          style={styles.scrollView}
+          showsVerticalScrollIndicator={false}
+          onScroll={onScroll}
+          scrollEventThrottle={16}
+          contentContainerStyle={styles.scrollContent}
+        >
         {(() => {
           const filteredEvents = getFilteredEvents();
+          const hasRealEvents = events.length > 0;
           
           // If user has ANY real events (not just filtered ones)
-          if (events.length > 0) {
+          if (hasRealEvents) {
             if (filteredEvents.length > 0) {
-              // Show user's real events (filtered by Previous/Upcoming)
+              const [first, ...rest] = filteredEvents;
+
               return (
                 <View>
-                  {filteredEvents.length === 1 ? (
-                    // Show main event card for single event
-                    <TouchableOpacity 
-                      style={styles.mainEventCard}
-                      onPress={() => router.push(`/event-detail?eventId=${filteredEvents[0].id}`)}
+                  {/* Hero card */}
+                  <Animated.View style={[styles.heroCard, heroAnimatedStyle]}>
+                    <LinearGradient
+                      colors={['#151C5A', '#391988']}
+                      start={{ x: 0, y: 0 }}
+                      end={{ x: 1, y: 1 }}
+                      style={styles.heroGradient}
                     >
-                      <Image 
-                        source={{ uri: filteredEvents[0].imageUrl || 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=300&h=200&fit=crop' }} 
-                        style={styles.mainEventImage} 
-                      />
-                      <View style={styles.mainEventOverlay}>
-                        <Text style={styles.mainEventTimeframe}>{getTimeframe(filteredEvents[0].date)}</Text>
-                        <Text style={styles.mainEventTitle}>{filteredEvents[0].title}</Text>
-                      </View>
-                    </TouchableOpacity>
-                  ) : (
-                    // Show full-width event cards for multiple events
-                    <View style={styles.eventsList}>
-                      {filteredEvents.map((event) => (
-                        <EventCard key={event.id} event={event} />
-                      ))}
-                    </View>
-                  )}
+                      <TouchableOpacity
+                        activeOpacity={0.9}
+                        onPress={() => router.push(`/event-detail?eventId=${first.id}`)}
+                        style={styles.heroContent}
+                      >
+                        <Text style={styles.heroTimeframe}>
+                          {getTimeframe(first.date).toUpperCase()}
+                        </Text>
+                        <Text style={styles.heroTitle}>{first.title}</Text>
+                      </TouchableOpacity>
+                    </LinearGradient>
+                  </Animated.View>
+
+                  {/* Remaining events as image cards */}
+                  <View style={styles.eventsList}>
+                    {rest.map((event) => (
+                      <EventCard key={event.id} event={event} />
+                    ))}
+                  </View>
                 </View>
               );
             } else {
@@ -202,6 +228,25 @@ export default function HomeScreen() {
           // Show mock events ONLY when user has NO real events at all
           return (
             <View>
+            {/* Mock hero card */}
+            <Animated.View style={[styles.heroCard, heroAnimatedStyle]}>
+              <LinearGradient
+                colors={['#151C5A', '#391988']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+                style={styles.heroGradient}
+              >
+                <TouchableOpacity
+                  activeOpacity={0.9}
+                  onPress={() => router.push('/event-detail?eventId=mock-1')}
+                  style={styles.heroContent}
+                >
+                  <Text style={styles.heroTimeframe}>IN 28 DAYS</Text>
+                  <Text style={styles.heroTitle}>Kate's Party</Text>
+                </TouchableOpacity>
+              </LinearGradient>
+            </Animated.View>
+
             {/* Mock Events List - Full Width Cards */}
             <View style={styles.eventsList}>
               {/* Mock Event 1 */}
@@ -291,7 +336,7 @@ export default function HomeScreen() {
           </View>
           );
         })()}
-        </ScrollView>
+        </Animated.ScrollView>
 
         {/* Bottom Filter */}
         <View style={styles.bottomFilter}>
@@ -320,7 +365,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#f5f5f7',
   },
   loadingContainer: {
     flex: 1,
@@ -337,9 +382,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 20,
     paddingVertical: 16,
-    backgroundColor: '#ffffff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
   },
   menuButton: {
     width: 40,
@@ -363,7 +405,34 @@ const styles = StyleSheet.create({
   appTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#000',
+    color: '#fff',
+  },
+  topControlsContainer: {
+    position: 'absolute',
+    top: 40,
+    left: 0,
+    right: 0,
+    zIndex: 20,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  allEventsPill: {
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 22,
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
+  },
+  allEventsPillText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#111',
   },
   addButton: {
     width: 40,
@@ -376,7 +445,7 @@ const styles = StyleSheet.create({
   filterContainer: {
     paddingHorizontal: 20,
     marginBottom: 20,
-    paddingTop: 20,
+    paddingTop: 16,
   },
   filterButton: {
     backgroundColor: '#f5f5f5',
@@ -418,8 +487,49 @@ const styles = StyleSheet.create({
   scrollView: {
     flex: 1,
   },
+  scrollContent: {
+    paddingTop: HERO_HEIGHT + 40,
+    paddingBottom: 32,
+  },
+  heroCard: {
+    height: HERO_HEIGHT,
+    marginHorizontal: CARD_HORIZONTAL_MARGIN,
+    borderRadius: 28,
+    overflow: 'hidden',
+    marginBottom: 18,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.25,
+    shadowRadius: 24,
+    elevation: 10,
+  },
+  heroGradient: {
+    flex: 1,
+    paddingTop: 72,
+    paddingBottom: 32,
+    paddingHorizontal: 24,
+    justifyContent: 'center',
+  },
+  heroContent: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  heroTimeframe: {
+    fontSize: 16,
+    color: 'rgba(255,255,255,0.9)',
+    letterSpacing: 2,
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  heroTitle: {
+    fontSize: 40,
+    fontWeight: '900',
+    color: '#fff',
+    textAlign: 'center',
+    textTransform: 'lowercase',
+  },
   eventsList: {
-    paddingHorizontal: 20,
+    paddingHorizontal: CARD_HORIZONTAL_MARGIN,
     paddingBottom: 20,
   },
   mainEventCard: {
