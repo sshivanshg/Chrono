@@ -165,6 +165,12 @@ export default function SettingsScreen() {
               <Text style={[styles.settingText, { color: '#ff3b30' }]}>Log Out</Text>
               <Ionicons name="chevron-forward" size={20} color="#999" />
             </TouchableOpacity>
+
+            {/* Credits */}
+            <View style={styles.creditsContainer}>
+              <Text style={styles.creditsText}>Crafted with ❤️ by Shivansh</Text>
+              <Text style={styles.versionText}>v1.0.0</Text>
+            </View>
           </View>
         </ScrollView>
       </AnimatedScreen>
@@ -480,5 +486,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#fff',
+  },
+  creditsContainer: {
+    alignItems: 'center',
+    paddingVertical: 32,
+    opacity: 0.6,
+  },
+  creditsText: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#666',
+    marginBottom: 4,
+  },
+  versionText: {
+    fontSize: 12,
+    color: '#999',
   },
 });

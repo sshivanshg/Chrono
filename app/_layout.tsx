@@ -2,12 +2,18 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 import 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import { AuthProvider, useAuth } from '../contexts/AuthContext';
 import { EventProvider } from '../contexts/EventContext';
+
+// import * as SplashScreen from 'expo-splash-screen';
+
+// Prevent the splash screen from auto-hiding before asset loading is complete.
+// SplashScreen.preventAutoHideAsync();
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -26,16 +32,24 @@ function AppContent() {
     const inSignInGroup = segments[0] === 'signin';
 
     if (!isSignedIn && !inSignInGroup) {
-      // Redirect to the sign-in page if not signed in and not already there
       router.replace('/signin');
     } else if (isSignedIn && inSignInGroup) {
-      // Redirect to the home page if signed in and trying to access sign-in
       router.replace('/(tabs)');
     }
   }, [isSignedIn, segments, loading]);
 
+  // useEffect(() => {
+  //   if (!loading) {
+  //     SplashScreen.hideAsync();
+  //   }
+  // }, [loading]);
+
   if (loading) {
-    return null;
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#ffffff' }}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
   }
 
   return (

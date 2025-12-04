@@ -1,4 +1,3 @@
-import { useThemeColor } from '@/hooks/use-theme-color';
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View, ViewStyle } from 'react-native';
 import { ThemedText } from '../themed-text';
@@ -22,10 +21,11 @@ export function ActionSheetItem({
     disabled,
     style,
 }: ActionSheetItemProps) {
-    const textColor = useThemeColor({}, 'text');
+    // Force dark text since the action sheet has a white background
+    const textColor = '#111';
     const destructiveColor = '#E53935';
     const disabledColor = '#999';
-    const borderBottomColor = useThemeColor({}, 'border');
+    const borderBottomColor = '#f0f0f0';
 
     const content = (
         <View style={[styles.container, { borderBottomColor }, style]}>

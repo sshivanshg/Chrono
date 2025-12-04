@@ -27,16 +27,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         setLoading(true);
 
-        const isAuthenticated = await AuthService.isAuthenticated();
+        // Failsafe: If auth check takes too long (e.g. AsyncStorage hangs), force loading to false
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Auth check timeout')), 3000)
+        );
 
-        if (isAuthenticated) {
-          const currentUser = await AuthService.getCurrentUser();
-          setUser(currentUser);
-        } else {
-          setUser(null);
-        }
+        const authPromise = async () => {
+          const isAuthenticated = await AuthService.isAuthenticated();
+          if (isAuthenticated) {
+            const currentUser = await AuthService.getCurrentUser();
+            setUser(currentUser);
+          } else {
+            setUser(null);
+          }
+        };
+
+        await Promise.race([authPromise(), timeoutPromise]);
+
       } catch (error) {
         console.error('Error checking auth status:', error);
+        // If it was a timeout or error, default to signed out so app can load
         setUser(null);
       } finally {
         setLoading(false);
