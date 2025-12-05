@@ -23,6 +23,14 @@ export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
     } catch (error: any) {
       console.error('Google Sign-In error:', error);
       const errorMessage = error.message || 'Failed to sign in with Google';
+
+      // Don't show alert if user cancelled or dismissed the sign in
+      if (errorMessage.toLowerCase().includes('cancelled') ||
+        errorMessage.toLowerCase().includes('dismissed')) {
+        console.log('User cancelled sign in - suppressing alert');
+        return;
+      }
+
       Alert.alert('Sign In Error', errorMessage);
       onError?.(errorMessage);
     }

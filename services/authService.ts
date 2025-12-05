@@ -28,11 +28,12 @@ class AuthService {
 
       if (Platform.OS !== 'web') {
         // Force Expo Auth Proxy for Expo Go to avoid 'exp://' which Google rejects
-        redirectUri = 'https://auth.expo.io/@shivansh_11/Chrono';
+        // For production/native builds, this should be your custom scheme
+        redirectUri = 'https://auth.expo.io/@shivansh_11/chrono';
       }
 
       console.log('------------------------------------------------');
-      console.log('PLEASE ADD THIS URI TO GOOGLE CLOUD CONSOLE:');
+      console.log('PLEASE ENSURE THIS REDIRECT URI IS IN GOOGLE CLOUD CONSOLE:');
       console.log(redirectUri);
       console.log('------------------------------------------------');
 

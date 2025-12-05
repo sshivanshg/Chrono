@@ -1,11 +1,10 @@
 {
   "expo": {
     "name": "Chrono",
-    "slug": "Chrono",
+    "slug": "chrono",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "chrono",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {

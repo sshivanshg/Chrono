@@ -2,19 +2,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useMemo, useState } from 'react';
 import {
-  Dimensions,
   Image,
-  SafeAreaView,
   StatusBar,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { AnimatedScreen } from '../components/AnimatedScreen';
 import { useEvents } from '../contexts/EventContext';
-
-const { width, height } = Dimensions.get('window');
 
 export default function EventDetailScreen() {
   const router = useRouter();
@@ -105,7 +102,7 @@ export default function EventDetailScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
       {/* Background Image */}
@@ -118,54 +115,56 @@ export default function EventDetailScreen() {
       {/* Dark overlay for better text readability */}
       <View style={styles.overlay} />
 
-      <AnimatedScreen>
-        {/* Top Navigation */}
-        <View style={styles.topNavigation}>
-          <TouchableOpacity style={styles.topButton} onPress={() => router.replace('/(tabs)')}>
-            <Text style={styles.topButtonText}>✕</Text>
-          </TouchableOpacity>
+      <SafeAreaView style={styles.safeArea}>
+        <AnimatedScreen>
+          {/* Top Navigation */}
+          <View style={styles.topNavigation}>
+            <TouchableOpacity style={styles.topButton} onPress={() => router.replace('/(tabs)')}>
+              <Text style={styles.topButtonText}>✕</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity style={styles.shareButton}>
-            <Text style={styles.shareButtonText}>Share</Text>
-          </TouchableOpacity>
+            <TouchableOpacity style={styles.shareButton}>
+              <Text style={styles.shareButtonText}>Share</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.menuButton}
-            onPress={() =>
-              router.push({
-                pathname: '/event-actions',
-                params: {
-                  eventId,
-                  eventTitle: event.title,
-                  selectedDate: event.date.toISOString(),
-                  isAllDay: String((event as any).isAllDay ?? true),
-                  repeats: String(!!(event as any).recurrence),
-                  selectedImage: event.imageUrl || '',
-                },
-              })
-            }
-          >
-            <Text style={styles.menuButtonText}>⋯</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Main Content */}
-        <View style={styles.contentContainer}>
-          {/* Timeframe */}
-          <Text style={styles.timeframeText}>
-            {eventId.startsWith('mock-') ? (event as any).timeframe : getTimeframe(event.date)}
-          </Text>
-
-          {/* Event Title */}
-          <Text style={styles.eventTitle}>{event.title}</Text>
-
-          {/* Date Pill */}
-          <View style={styles.datePill}>
-            <Text style={styles.dateText}>{formatDate(event.date)}</Text>
+            <TouchableOpacity
+              style={styles.menuButton}
+              onPress={() =>
+                router.push({
+                  pathname: '/event-actions',
+                  params: {
+                    eventId,
+                    eventTitle: event.title,
+                    selectedDate: event.date.toISOString(),
+                    isAllDay: String((event as any).isAllDay ?? true),
+                    repeats: String(!!(event as any).recurrence),
+                    selectedImage: event.imageUrl || '',
+                  },
+                })
+              }
+            >
+              <Text style={styles.menuButtonText}>⋯</Text>
+            </TouchableOpacity>
           </View>
-        </View>
 
-      </AnimatedScreen>
+          {/* Main Content */}
+          <View style={styles.contentContainer}>
+            {/* Timeframe */}
+            <Text style={styles.timeframeText}>
+              {eventId.startsWith('mock-') ? (event as any).timeframe : getTimeframe(event.date)}
+            </Text>
+
+            {/* Event Title */}
+            <Text style={styles.eventTitle}>{event.title}</Text>
+
+            {/* Date Pill */}
+            <View style={styles.datePill}>
+              <Text style={styles.dateText}>{formatDate(event.date)}</Text>
+            </View>
+          </View>
+
+        </AnimatedScreen>
+      </SafeAreaView>
 
       {/* Bottom Bar */}
       <View style={styles.bottomBar}>
@@ -207,7 +206,7 @@ export default function EventDetailScreen() {
           </View>
         </View>
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -215,20 +214,25 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#000',
+    overflow: 'hidden',
+  },
+  safeArea: {
+    flex: 1,
   },
   backgroundImage: {
     position: 'absolute',
     top: 0,
     left: 0,
-    width: width,
-    height: height,
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#000', // Fallback color
   },
   overlay: {
     position: 'absolute',
     top: 0,
     left: 0,
-    width: width,
-    height: height,
+    width: '100%',
+    height: '100%',
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
   },
   topNavigation: {
