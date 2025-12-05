@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   Dimensions,
   ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { Event } from '../types';
 
@@ -37,17 +37,17 @@ export default function Calendar({ events, onDateSelect, onEventSelect }: Calend
     const startingDayOfWeek = firstDay.getDay();
 
     const days = [];
-    
+
     // Add empty cells for days before the first day of the month
     for (let i = 0; i < startingDayOfWeek; i++) {
       days.push(null);
     }
-    
+
     // Add days of the month
     for (let day = 1; day <= daysInMonth; day++) {
       days.push(new Date(year, month, day));
     }
-    
+
     return days;
   };
 
@@ -90,18 +90,18 @@ export default function Calendar({ events, onDateSelect, onEventSelect }: Calend
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.navButton}
           onPress={() => navigateMonth('prev')}
         >
           <Text style={styles.navButtonText}>‹</Text>
         </TouchableOpacity>
-        
+
         <Text style={styles.monthYear}>
           {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
         </Text>
-        
-        <TouchableOpacity 
+
+        <TouchableOpacity
           style={styles.navButton}
           onPress={() => navigateMonth('next')}
         >
@@ -144,7 +144,7 @@ export default function Calendar({ events, onDateSelect, onEventSelect }: Calend
               ]}>
                 {date.getDate()}
               </Text>
-              
+
               {/* Event indicators */}
               <View style={styles.eventIndicators}>
                 {dayEvents.slice(0, 3).map((event, eventIndex) => (
@@ -195,7 +195,6 @@ export default function Calendar({ events, onDateSelect, onEventSelect }: Calend
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     backgroundColor: '#fff',
   },
   header: {

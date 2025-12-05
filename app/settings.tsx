@@ -1,3 +1,4 @@
+import { useThemeColor } from '@/hooks/use-theme-color';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
@@ -9,18 +10,25 @@ import {
   ScrollView,
   StatusBar,
   StyleSheet,
+  Switch,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import { AnimatedScreen } from '../components/AnimatedScreen';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 
 export default function SettingsScreen() {
   const router = useRouter();
   const { signOut, user } = useAuth();
+  const { theme, setTheme, colorScheme } = useTheme();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  const backgroundColor = useThemeColor({}, 'background');
+  const textColor = useThemeColor({}, 'text');
+  const iconColor = useThemeColor({}, 'icon');
 
   const handleLogout = async () => {
     try {
@@ -46,7 +54,9 @@ export default function SettingsScreen() {
         blurRadius={20}
       />
       <LinearGradient
-        colors={['rgba(245, 245, 245, 0.85)', 'rgba(255, 255, 255, 0.95)']}
+        colors={colorScheme === 'dark'
+          ? ['rgba(0, 0, 0, 0.85)', 'rgba(20, 20, 20, 0.95)']
+          : ['rgba(245, 245, 245, 0.85)', 'rgba(255, 255, 255, 0.95)']}
         style={styles.backgroundOverlay}
       />
 
@@ -98,72 +108,74 @@ export default function SettingsScreen() {
           {/* Settings List */}
           <View style={styles.settingsList}>
             {/* Preferences */}
-            <TouchableOpacity style={styles.settingItem}>
-              <Ionicons name="settings-outline" size={20} color="#000" style={styles.settingIcon} />
-              <Text style={styles.settingText}>Preferences</Text>
-              <Ionicons name="chevron-forward" size={20} color="#999" />
+            <TouchableOpacity style={[styles.settingItem, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff' }]}>
+              <Ionicons name="settings-outline" size={20} color={textColor} style={styles.settingIcon} />
+              <Text style={[styles.settingText, { color: textColor }]}>Preferences</Text>
+              <Ionicons name="chevron-forward" size={20} color={colorScheme === 'dark' ? '#666' : '#999'} />
             </TouchableOpacity>
 
             {/* Night Mode */}
-            <TouchableOpacity style={styles.settingItem}>
-              <Ionicons name="moon-outline" size={20} color="#000" style={styles.settingIcon} />
-              <Text style={styles.settingText}>Night mode</Text>
-              <View style={styles.proTag}>
-                <Text style={styles.proTagText}>PRO</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color="#999" style={styles.settingArrow} />
-            </TouchableOpacity>
+            <View style={[styles.settingItem, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff' }]}>
+              <Ionicons name="moon-outline" size={20} color={textColor} style={styles.settingIcon} />
+              <Text style={[styles.settingText, { color: textColor }]}>Night mode</Text>
+              <Switch
+                value={theme === 'dark'}
+                onValueChange={(value: boolean) => setTheme(value ? 'dark' : 'light')}
+                trackColor={{ false: '#767577', true: '#81b0ff' }}
+                thumbColor={theme === 'dark' ? '#f5dd4b' : '#f4f3f4'}
+              />
+            </View>
 
             {/* Referrals */}
-            <TouchableOpacity style={styles.settingItem}>
-              <Ionicons name="paper-plane-outline" size={20} color="#000" style={styles.settingIcon} />
-              <Text style={styles.settingText}>Referrals</Text>
-              <Ionicons name="chevron-forward" size={20} color="#999" />
+            <TouchableOpacity style={[styles.settingItem, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff' }]}>
+              <Ionicons name="paper-plane-outline" size={20} color={textColor} style={styles.settingIcon} />
+              <Text style={[styles.settingText, { color: textColor }]}>Referrals</Text>
+              <Ionicons name="chevron-forward" size={20} color={colorScheme === 'dark' ? '#666' : '#999'} />
             </TouchableOpacity>
 
             {/* Connect your calendar */}
-            <TouchableOpacity style={styles.settingItem}>
-              <Ionicons name="calendar-outline" size={20} color="#000" style={styles.settingIcon} />
-              <Text style={styles.settingText}>Connect your calendar</Text>
+            <TouchableOpacity style={[styles.settingItem, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff' }]}>
+              <Ionicons name="calendar-outline" size={20} color={textColor} style={styles.settingIcon} />
+              <Text style={[styles.settingText, { color: textColor }]}>Connect your calendar</Text>
               <View style={styles.connectedIndicator}>
                 <View style={styles.connectedDot} />
-                <Ionicons name="chevron-forward" size={20} color="#999" />
+                <Ionicons name="chevron-forward" size={20} color={colorScheme === 'dark' ? '#666' : '#999'} />
               </View>
             </TouchableOpacity>
 
             {/* Support */}
-            <TouchableOpacity style={styles.settingItem}>
-              <Ionicons name="help-circle-outline" size={20} color="#000" style={styles.settingIcon} />
-              <Text style={styles.settingText}>Support</Text>
-              <Ionicons name="chevron-forward" size={20} color="#999" />
+            <TouchableOpacity style={[styles.settingItem, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff' }]}>
+              <Ionicons name="help-circle-outline" size={20} color={textColor} style={styles.settingIcon} />
+              <Text style={[styles.settingText, { color: textColor }]}>Support</Text>
+              <Ionicons name="chevron-forward" size={20} color={colorScheme === 'dark' ? '#666' : '#999'} />
             </TouchableOpacity>
 
             {/* Suggestions */}
-            <TouchableOpacity style={styles.settingItem}>
-              <Ionicons name="chatbubble-outline" size={20} color="#000" style={styles.settingIcon} />
-              <Text style={styles.settingText}>Suggestions</Text>
-              <Ionicons name="chevron-forward" size={20} color="#999" />
+            <TouchableOpacity style={[styles.settingItem, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff' }]}>
+              <Ionicons name="chatbubble-outline" size={20} color={textColor} style={styles.settingIcon} />
+              <Text style={[styles.settingText, { color: textColor }]}>Suggestions</Text>
+              <Ionicons name="chevron-forward" size={20} color={colorScheme === 'dark' ? '#666' : '#999'} />
             </TouchableOpacity>
 
             {/* About */}
-            <TouchableOpacity style={styles.settingItem}>
-              <Ionicons name="information-circle-outline" size={20} color="#000" style={styles.settingIcon} />
-              <Text style={styles.settingText}>About</Text>
-              <Ionicons name="chevron-forward" size={20} color="#999" />
+            <TouchableOpacity style={[styles.settingItem, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff' }]}>
+              <Ionicons name="information-circle-outline" size={20} color={textColor} style={styles.settingIcon} />
+              <Text style={[styles.settingText, { color: textColor }]}>About</Text>
+              <Ionicons name="chevron-forward" size={20} color={colorScheme === 'dark' ? '#666' : '#999'} />
             </TouchableOpacity>
 
             {/* Rate app */}
-            <TouchableOpacity style={styles.settingItem}>
-              <Ionicons name="star-outline" size={20} color="#000" style={styles.settingIcon} />
-              <Text style={styles.settingText}>Rate app</Text>
-              <Ionicons name="chevron-forward" size={20} color="#999" />
+            <TouchableOpacity style={[styles.settingItem, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff' }]}>
+              <Ionicons name="star-outline" size={20} color={textColor} style={styles.settingIcon} />
+              <Text style={[styles.settingText, { color: textColor }]}>Rate app</Text>
+              <Ionicons name="chevron-forward" size={20} color={colorScheme === 'dark' ? '#666' : '#999'} />
             </TouchableOpacity>
 
             {/* Logout */}
-            <TouchableOpacity style={styles.settingItem} onPress={() => setShowLogoutConfirm(true)}>
+            <TouchableOpacity style={[styles.settingItem, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff' }]} onPress={() => setShowLogoutConfirm(true)}>
               <Ionicons name="log-out-outline" size={20} color="#ff3b30" style={styles.settingIcon} />
               <Text style={[styles.settingText, { color: '#ff3b30' }]}>Log Out</Text>
-              <Ionicons name="chevron-forward" size={20} color="#999" />
+              <Ionicons name="chevron-forward" size={20} color={colorScheme === 'dark' ? '#666' : '#999'} />
             </TouchableOpacity>
 
             {/* Credits */}

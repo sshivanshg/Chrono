@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import {
   SafeAreaView,
+  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
@@ -63,11 +64,13 @@ export default function CalendarScreen() {
         </View>
 
         {/* Calendar Component */}
-        <Calendar
-          events={events}
-          onDateSelect={handleDateSelect}
-          onEventSelect={handleEventSelect}
-        />
+        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+          <Calendar
+            events={events}
+            onDateSelect={handleDateSelect}
+            onEventSelect={handleEventSelect}
+          />
+        </ScrollView>
 
         {/* Event Modal */}
         <EventModal
