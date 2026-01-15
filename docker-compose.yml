@@ -1,0 +1,36 @@
+version: "3.8"
+
+services:
+  # Development server with hot reload
+  dev:
+    build:
+      context: .
+      target: development
+    ports:
+      - "8081:8081" # Metro bundler
+      - "19000:19000" # Expo
+      - "19001:19001" # Expo
+      - "19002:19002" # Expo DevTools
+    volumes:
+      - .:/app
+      - /app/node_modules # Preserve container's node_modules
+    environment:
+      - EXPO_DEVTOOLS_LISTEN_ADDRESS=0.0.0.0
+      - REACT_NATIVE_PACKAGER_HOSTNAME=0.0.0.0
+    stdin_open: true
+    tty: true
+
+  # Web production build
+  web:
+    build:
+      context: .
+      target: web-production
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
