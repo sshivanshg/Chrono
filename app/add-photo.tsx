@@ -207,7 +207,7 @@ export default function AddPhotoScreen() {
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Photo library</Text>
               <TouchableOpacity style={styles.actionButton} onPress={handleSeeAll}>
-                <Text style={styles.actionButtonText}>See All</Text>
+                <Text style={styles.actionButtonText}>Pick your own</Text>
               </TouchableOpacity>
             </View>
             

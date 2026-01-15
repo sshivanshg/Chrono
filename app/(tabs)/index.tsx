@@ -180,87 +180,12 @@ export default function HomeScreen() {
               }
             }
 
-            // Show mock events ONLY when user has NO real events at all
+            // Show empty state when user has no events
             return (
-              <View>
-                {/* Mock Events List - Full Width Cards */}
-                <View style={styles.eventsList}>
-                  {/* Mock Event 1 */}
-                  <TouchableOpacity
-                    style={styles.eventCard}
-                    onPress={() => router.push('/event-detail?eventId=mock-1')}
-                  >
-                    <Image source={{ uri: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=800&h=400&fit=crop' }} style={styles.eventImage} />
-                    <View style={styles.eventOverlay}>
-                      <Text style={styles.timeframeText}>IN 28 DAYS</Text>
-                      <Text style={styles.eventTitle}>Kate&apos;s Party</Text>
-                    </View>
-                  </TouchableOpacity>
-
-                  {/* Mock Event 2 */}
-                  <TouchableOpacity
-                    style={styles.eventCard}
-                    onPress={() => router.push('/event-detail?eventId=mock-2')}
-                  >
-                    <Image source={{ uri: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=800&h=400&fit=crop' }} style={styles.eventImage} />
-                    <View style={styles.eventOverlay}>
-                      <Text style={styles.timeframeText}>IN 3 DAYS</Text>
-                      <Text style={styles.eventTitle}>Basketball</Text>
-                    </View>
-                  </TouchableOpacity>
-
-                  {/* Mock Event 3 */}
-                  <TouchableOpacity
-                    style={styles.eventCard}
-                    onPress={() => router.push('/event-detail?eventId=mock-3')}
-                  >
-                    <Image source={{ uri: 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&h=400&fit=crop' }} style={styles.eventImage} />
-                    <View style={styles.eventOverlay}>
-                      <Text style={styles.timeframeText}>IN 16 WEEKS</Text>
-                      <Text style={styles.eventTitle}>Moving House</Text>
-                    </View>
-                  </TouchableOpacity>
-
-                  {/* Mock Event 4 */}
-                  <TouchableOpacity
-                    style={styles.eventCard}
-                    onPress={() => router.push('/event-detail?eventId=mock-4')}
-                  >
-                    <Image source={{ uri: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?w=800&h=400&fit=crop' }} style={styles.eventImage} />
-                    <View style={styles.eventOverlay}>
-                      <Text style={styles.timeframeText}>TOMORROW</Text>
-                      <Text style={styles.eventTitle}>Anniversary</Text>
-                    </View>
-                  </TouchableOpacity>
-
-                  {/* Mock Event 5 */}
-                  <TouchableOpacity
-                    style={styles.eventCard}
-                    onPress={() => router.push('/event-detail?eventId=mock-5')}
-                  >
-                    <Image source={{ uri: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=400&fit=crop' }} style={styles.eventImage} />
-                    <View style={styles.eventOverlay}>
-                      <Text style={styles.timeframeText}>IN 3 HOURS</Text>
-                      <Text style={styles.eventTitle}>Workout</Text>
-                    </View>
-                  </TouchableOpacity>
-
-                  {/* Mock Event 6 */}
-                  <TouchableOpacity
-                    style={styles.eventCard}
-                    onPress={() => router.push('/event-detail?eventId=mock-6')}
-                  >
-                    <Image source={{ uri: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=800&h=400&fit=crop' }} style={styles.eventImage} />
-                    <View style={styles.eventOverlay}>
-                      <Text style={styles.timeframeText}>IN 1 MONTH</Text>
-                      <Text style={styles.eventTitle}>Pool Party</Text>
-                    </View>
-                  </TouchableOpacity>
-                </View>
-
+              <View style={styles.emptyStateContainer}>
                 {/* Add Events Section */}
                 <View style={styles.addEventsSection}>
-                  <Text style={styles.addEventsTitle}>Add your events</Text>
+                  <Text style={styles.addEventsTitle}>No events yet</Text>
                   <Text style={styles.addEventsSubtitle}>Get started by adding your special moments</Text>
                   <TouchableOpacity
                     style={styles.createEventButton}
@@ -412,6 +337,12 @@ const styles = StyleSheet.create({
     padding: 40,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 60,
   },
   noEventsText: {
     fontSize: 18,

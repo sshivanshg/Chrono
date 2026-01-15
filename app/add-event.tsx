@@ -18,9 +18,7 @@ const { width } = Dimensions.get('window');
 
 // Mock event suggestions
 const eventSuggestions = [
-  { title: 'Shobit birthday', timeframe: 'IN 90 DAYS' },
-  { title: 'Holika Dahana', timeframe: 'IN 131 DAYS' },
-  { title: 'Holi Festival', timeframe: 'IN 131 DAYS' },
+  { title: 'birthday', timeframe: 'IN 90 DAYS' },
   { title: 'Diwali', timeframe: 'IN 200 DAYS' },
   { title: 'New Year', timeframe: 'IN 365 DAYS' },
 ];

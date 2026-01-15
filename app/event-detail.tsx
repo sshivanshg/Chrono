@@ -20,34 +20,12 @@ export default function EventDetailScreen() {
 
   const eventId = params.eventId as string;
 
-  // Handle mock events
-  const getMockEvent = (id: string) => {
-    const mockEvents = {
-      'mock-1': {
-        id: 'mock-1',
-        title: "Kate's Party",
-        imageUrl: 'https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=300&h=200&fit=crop',
-        date: new Date(Date.now() + 28 * 24 * 60 * 60 * 1000), // 28 days from now
-        timeframe: 'IN 28 DAYS'
-      },
-      'mock-2': {
-        id: 'mock-2',
-        title: 'Basketball',
-        imageUrl: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=300&h=200&fit=crop',
-        date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
-        timeframe: 'IN 3 DAYS'
-      },
-
-
-    };
-    return mockEvents[id as keyof typeof mockEvents];
-  };
-
-  const event = eventId.startsWith('mock-') ? getMockEvent(eventId) : events.find(e => e.id === eventId);
+  // Find the event by ID
+  const event = events.find(e => e.id === eventId);
 
   const initialConfirm = useMemo(
-    () => params.confirmDelete === 'true' && !eventId.startsWith('mock-'),
-    [params.confirmDelete, eventId]
+    () => params.confirmDelete === 'true',
+    [params.confirmDelete]
   );
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(initialConfirm);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -90,7 +68,7 @@ export default function EventDetailScreen() {
   };
 
   const handleConfirmDelete = async () => {
-    if (!event || isDeleting || eventId.startsWith('mock-')) return;
+    if (!event || isDeleting) return;
     try {
       setIsDeleting(true);
       await deleteEvent(event.id);
@@ -151,7 +129,7 @@ export default function EventDetailScreen() {
           <View style={styles.contentContainer}>
             {/* Timeframe */}
             <Text style={styles.timeframeText}>
-              {eventId.startsWith('mock-') ? (event as any).timeframe : getTimeframe(event.date)}
+              {getTimeframe(event.date)}
             </Text>
 
             {/* Event Title */}
