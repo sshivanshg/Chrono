@@ -12,6 +12,10 @@ export interface Environment {
   googleSignIn: {
     webClientId: string;
   };
+  supabase: {
+    url: string;
+    anonKey: string;
+  };
   features: {
     analytics: boolean;
     notifications: boolean;
@@ -32,6 +36,10 @@ export const development: Environment = {
   googleSignIn: {
     webClientId: '941489768691-la2n0nd4d4g676i7sdrjdnucn0bao9t8.apps.googleusercontent.com',
   },
+  supabase: {
+    url: 'https://mmwgiszrbaaxoimmzgtp.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1td2dpc3pyYmFheG9pbW16Z3RwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5MDMyNjMsImV4cCI6MjA4MDQ3OTI2M30.upzlORUC0sDSIG32bM4ECgmIAWVpuIOjSXgU6yETy2M',
+  },
   features: {
     analytics: true,
     notifications: true,
@@ -51,6 +59,10 @@ export const production: Environment = {
   },
   googleSignIn: {
     webClientId: '941489768691-la2n0nd4d4g676i7sdrjdnucn0bao9t8.apps.googleusercontent.com',
+  },
+  supabase: {
+    url: 'https://mmwgiszrbaaxoimmzgtp.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1td2dpc3pyYmFheG9pbW16Z3RwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ5MDMyNjMsImV4cCI6MjA4MDQ3OTI2M30.upzlORUC0sDSIG32bM4ECgmIAWVpuIOjSXgU6yETy2M',
   },
   features: {
     analytics: true,

@@ -6,7 +6,8 @@ import AuthService, { AuthUser } from '../services/authService';
 interface AuthContextType {
   user: AuthUser | null;
   loading: boolean;
-  signInWithGoogle: () => Promise<void>;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   isSignedIn: boolean;
 }
@@ -56,13 +57,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     checkAuthStatus();
   }, []);
 
-  const signInWithGoogle = async () => {
+  const signIn = async (email: string, password: string) => {
     try {
       setLoading(true);
-      const user = await AuthService.signInWithGoogle();
+      const user = await AuthService.signInWithEmail(email, password);
       setUser(user);
     } catch (error) {
       console.error('Sign in error:', error);
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const signUp = async (email: string, password: string) => {
+    try {
+      setLoading(true);
+      const user = await AuthService.signUpWithEmail(email, password);
+      setUser(user);
+    } catch (error) {
+      console.error('Sign up error:', error);
       throw error;
     } finally {
       setLoading(false);
@@ -85,7 +99,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const value: AuthContextType = {
     user,
     loading,
-    signInWithGoogle,
+    signIn,
+    signUp,
     signOut,
     isSignedIn: !!user,
   };

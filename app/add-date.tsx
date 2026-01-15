@@ -91,8 +91,7 @@ export default function AddDateScreen() {
     event: NativeSyntheticEvent<NativeScrollEvent>
   ) => {
     const offsetY = event.nativeEvent.contentOffset.y;
-    // Centered item index, assuming picker wheel shows 3 items (height 150)
-    const rawIndex = Math.round(offsetY / PICKER_ITEM_HEIGHT) + 1;
+    const rawIndex = Math.round(offsetY / PICKER_ITEM_HEIGHT);
 
     if (type === 'day') {
       const index = Math.min(Math.max(rawIndex, 0), days.length - 1);
@@ -116,7 +115,7 @@ export default function AddDateScreen() {
     event: NativeSyntheticEvent<NativeScrollEvent>
   ) => {
     const offsetY = event.nativeEvent.contentOffset.y;
-    const rawIndex = Math.round(offsetY / PICKER_ITEM_HEIGHT) + 1;
+    const rawIndex = Math.round(offsetY / PICKER_ITEM_HEIGHT);
 
     if (type === 'day') {
       const index = Math.min(Math.max(rawIndex, 0), days.length - 1);
@@ -141,12 +140,18 @@ export default function AddDateScreen() {
     }
   };
 
-  // Initialize scroll positions on mount
+  // Initialize scroll positions on mount (sync to today's date)
   useEffect(() => {
+    const now = new Date();
+    setSelectedDate(now);
+    setSelectedDay(now.getDate());
+    setSelectedMonth(now.getMonth());
+    setSelectedYear(now.getFullYear());
+
     const timer = setTimeout(() => {
-      scrollToItem(dayScrollRef, selectedDay - 1);
-      scrollToItem(monthScrollRef, selectedMonth);
-      const yearIndex = years.findIndex(year => year === selectedYear);
+      scrollToItem(dayScrollRef, now.getDate() - 1);
+      scrollToItem(monthScrollRef, now.getMonth());
+      const yearIndex = years.findIndex(year => year === now.getFullYear());
       if (yearIndex !== -1) {
         scrollToItem(yearScrollRef, yearIndex);
       }
