@@ -164,6 +164,19 @@ export default function SettingsScreen() {
               <Ionicons name="chevron-forward" size={20} color={colorScheme === 'dark' ? '#666' : '#999'} />
             </TouchableOpacity>
 
+            {/* Widget Preview */}
+            <TouchableOpacity
+              style={[styles.settingItem, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff' }]}
+              onPress={() => router.push('/widget-preview')}
+            >
+              <Ionicons name="apps-outline" size={20} color={textColor} style={styles.settingIcon} />
+              <Text style={[styles.settingText, { color: textColor }]}>Widget Preview</Text>
+              <View style={styles.newBadge}>
+                <Text style={styles.newBadgeText}>NEW</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={colorScheme === 'dark' ? '#666' : '#999'} />
+            </TouchableOpacity>
+
             {/* Rate app */}
             <TouchableOpacity style={[styles.settingItem, { backgroundColor: colorScheme === 'dark' ? '#1c1c1e' : '#fff' }]}>
               <Ionicons name="star-outline" size={20} color={textColor} style={styles.settingIcon} />
@@ -513,5 +526,18 @@ const styles = StyleSheet.create({
   versionText: {
     fontSize: 12,
     color: '#999',
+  },
+  newBadge: {
+    backgroundColor: '#6c63ff',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    marginRight: 8,
+  },
+  newBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#fff',
+    letterSpacing: 0.5,
   },
 });
