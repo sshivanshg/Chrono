@@ -1,7 +1,8 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack } from 'expo-router';
+import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { Platform } from 'react-native';
+import { useEffect } from 'react';
+import { ActivityIndicator, Platform, View } from 'react-native';
 import 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -12,7 +13,7 @@ if (Platform.OS === 'android') {
 
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { AuthProvider } from '../contexts/AuthContext';
+import { AuthProvider, useAuth } from '../contexts/AuthContext';
 import { EventProvider } from '../contexts/EventContext';
 import { ThemeProvider as ThemeContextProvider } from '../contexts/ThemeContext';
 
@@ -29,30 +30,29 @@ function AppContent() {
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
 
-  // Auth bypass - go directly to main page
-  // To re-enable auth, uncomment the useEffect below and the loading check
+  const { isSignedIn, loading } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
 
-  // const { isSignedIn, loading } = useAuth();
-  // const segments = useSegments();
-  // const router = useRouter();
-  //
-  // useEffect(() => {
-  //   if (loading) return;
-  //   const inSignInGroup = segments[0] === 'signin';
-  //   if (!isSignedIn && !inSignInGroup) {
-  //     router.replace('/signin');
-  //   } else if (isSignedIn && inSignInGroup) {
-  //     router.replace('/(tabs)');
-  //   }
-  // }, [isSignedIn, segments, loading]);
-  //
-  // if (loading) {
-  //   return (
-  //     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#ffffff' }}>
-  //       <ActivityIndicator size="large" color="#0000ff" />
-  //     </View>
-  //   );
-  // }
+  useEffect(() => {
+    if (loading) return;
+
+    const inSignInGroup = segments[0] === 'signin';
+
+    if (isSignedIn && inSignInGroup) {
+      // If user is signed in and trying to access signin page (or just signed in), redirect to tabs
+      router.replace('/(tabs)');
+    }
+    // Note: We removed the redirect for !isSignedIn to allow "Guest Mode" / Auth Bypass
+  }, [isSignedIn, segments, loading]);
+
+  if (loading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#ffffff' }}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
