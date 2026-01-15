@@ -80,6 +80,7 @@ function AppContent() {
         <Stack.Screen name="event-actions" options={{ presentation: 'transparentModal', headerShown: false }} />
         <Stack.Screen name="calendar" />
         <Stack.Screen name="signin" />
+        <Stack.Screen name="widget-preview" />
       </Stack>
       <StatusBar style={colorScheme === 'dark' ? 'light' : 'dark'} />
     </ThemeProvider>
