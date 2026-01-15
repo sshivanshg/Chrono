@@ -46,25 +46,7 @@
           "iosUrlScheme": "com.googleusercontent.apps.941489768691-la2n0nd4d4g676i7sdrjdnucn0bao9t8"
         }
       ],
-      "expo-web-browser",
-      [
-        "react-native-android-widget",
-        {
-          "widgets": [
-            {
-              "name": "UpcomingEventWidget",
-              "label": "Countdown Widget",
-              "minWidth": "180dp",
-              "minHeight": "110dp",
-              "description": "Shows your next upcoming event countdown",
-              "previewImage": "./assets/images/widget-preview.png",
-              "updatePeriodMillis": 1800000,
-              "resizeMode": "horizontal|vertical",
-              "widgetFeatures": "reconfigurable"
-            }
-          ]
-        }
-      ]
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,
