@@ -1,18 +1,43 @@
 import React from 'react';
 import { FlexWidget, TextWidget } from 'react-native-android-widget';
 
+// Theme colors matching the app's design system
+const WidgetTheme = {
+    // Light theme (default - matches app's light mode)
+    light: {
+        background: '#ffffff',
+        cardBackground: '#f5f5f7',
+        text: '#11181C',
+        textSecondary: '#687076',
+        accent: '#000000',
+        border: '#e0e0e0',
+    },
+    // Dark theme (matches app's dark mode)
+    dark: {
+        background: '#151718',
+        cardBackground: '#1c1c1e',
+        text: '#ECEDEE',
+        textSecondary: '#9BA1A6',
+        accent: '#ffffff',
+        border: '#333333',
+    },
+};
+
 interface UpcomingEventWidgetProps {
     eventTitle?: string;
     daysLeft?: number;
     eventDate?: string;
+    isDarkMode?: boolean;
 }
 
 export function UpcomingEventWidget({
     eventTitle = 'No upcoming events',
     daysLeft = 0,
     eventDate = '',
+    isDarkMode = false,
 }: UpcomingEventWidgetProps) {
     const hasEvent = eventTitle !== 'No upcoming events';
+    const theme = isDarkMode ? WidgetTheme.dark : WidgetTheme.light;
 
     return (
         <FlexWidget
@@ -22,48 +47,58 @@ export function UpcomingEventWidget({
                 flexDirection: 'column',
                 justifyContent: 'center',
                 alignItems: 'center',
-                backgroundColor: '#1a1a2e',
-                borderRadius: 24,
+                backgroundColor: theme.cardBackground,
+                borderRadius: 28,
                 padding: 16,
             }}
         >
-            {/* App name */}
-            <TextWidget
-                text="CHRONO"
+            {/* App name badge */}
+            <FlexWidget
                 style={{
-                    fontSize: 12,
-                    fontWeight: '600',
-                    color: '#6c63ff',
-                    letterSpacing: 2,
-                    marginBottom: 8,
+                    backgroundColor: theme.accent,
+                    paddingHorizontal: 12,
+                    paddingVertical: 4,
+                    borderRadius: 12,
+                    marginBottom: 12,
                 }}
-            />
+            >
+                <TextWidget
+                    text="CHRONO"
+                    style={{
+                        fontSize: 10,
+                        fontWeight: '700',
+                        color: isDarkMode ? '#000000' : '#ffffff',
+                        letterSpacing: 1,
+                    }}
+                />
+            </FlexWidget>
 
             {hasEvent ? (
                 <>
-                    {/* Days countdown */}
+                    {/* Days countdown - large number */}
                     <FlexWidget
                         style={{
                             flexDirection: 'row',
                             alignItems: 'flex-end',
-                            marginBottom: 4,
+                            marginBottom: 8,
                         }}
                     >
                         <TextWidget
                             text={String(daysLeft)}
                             style={{
-                                fontSize: 48,
+                                fontSize: 56,
                                 fontWeight: 'bold',
-                                color: '#ffffff',
+                                color: theme.text,
                             }}
                         />
                         <TextWidget
                             text={daysLeft === 1 ? ' DAY' : ' DAYS'}
                             style={{
-                                fontSize: 16,
+                                fontSize: 14,
                                 fontWeight: '600',
-                                color: '#888888',
+                                color: theme.textSecondary,
                                 marginLeft: 4,
+                                marginBottom: 10,
                             }}
                         />
                     </FlexWidget>
@@ -74,7 +109,7 @@ export function UpcomingEventWidget({
                         style={{
                             fontSize: 18,
                             fontWeight: 'bold',
-                            color: '#ffffff',
+                            color: theme.text,
                             textAlign: 'center',
                             marginBottom: 4,
                         }}
@@ -86,29 +121,39 @@ export function UpcomingEventWidget({
                     <TextWidget
                         text={eventDate}
                         style={{
-                            fontSize: 12,
-                            color: '#888888',
+                            fontSize: 13,
+                            color: theme.textSecondary,
                             textAlign: 'center',
                         }}
                     />
                 </>
             ) : (
                 <>
+                    {/* Empty state icon placeholder */}
+                    <TextWidget
+                        text="📅"
+                        style={{
+                            fontSize: 32,
+                            marginBottom: 8,
+                        }}
+                    />
+
                     {/* No events message */}
                     <TextWidget
                         text="No upcoming events"
                         style={{
                             fontSize: 16,
-                            color: '#888888',
+                            fontWeight: '600',
+                            color: theme.text,
                             textAlign: 'center',
-                            marginBottom: 8,
+                            marginBottom: 4,
                         }}
                     />
                     <TextWidget
                         text="Tap to add one"
                         style={{
-                            fontSize: 14,
-                            color: '#6c63ff',
+                            fontSize: 13,
+                            color: theme.textSecondary,
                             textAlign: 'center',
                         }}
                     />

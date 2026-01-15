@@ -11,46 +11,84 @@ import {
     View,
 } from 'react-native';
 import { useEvents } from '../contexts/EventContext';
+import { useTheme } from '../contexts/ThemeContext';
+
+// Theme colors matching the app's design system
+const WidgetTheme = {
+    light: {
+        background: '#ffffff',
+        cardBackground: '#f5f5f7',
+        text: '#11181C',
+        textSecondary: '#687076',
+        accent: '#000000',
+    },
+    dark: {
+        background: '#151718',
+        cardBackground: '#1c1c1e',
+        text: '#ECEDEE',
+        textSecondary: '#9BA1A6',
+        accent: '#ffffff',
+    },
+};
 
 // Widget Preview Component (mimics the actual widget appearance)
 function WidgetPreview({
     eventTitle = 'No upcoming events',
     daysLeft = 0,
     eventDate = '',
+    isDarkMode = false,
 }: {
     eventTitle?: string;
     daysLeft?: number;
     eventDate?: string;
+    isDarkMode?: boolean;
 }) {
     const hasEvent = eventTitle !== 'No upcoming events';
+    const theme = isDarkMode ? WidgetTheme.dark : WidgetTheme.light;
 
     return (
-        <View style={widgetStyles.container}>
-            {/* App name */}
-            <Text style={widgetStyles.appName}>CHRONO</Text>
+        <View style={[widgetStyles.container, { backgroundColor: theme.cardBackground }]}>
+            {/* App name badge */}
+            <View style={[widgetStyles.appBadge, { backgroundColor: theme.accent }]}>
+                <Text style={[widgetStyles.appName, { color: isDarkMode ? '#000' : '#fff' }]}>
+                    CHRONO
+                </Text>
+            </View>
 
             {hasEvent ? (
                 <>
                     {/* Days countdown */}
                     <View style={widgetStyles.countdownRow}>
-                        <Text style={widgetStyles.daysNumber}>{daysLeft}</Text>
-                        <Text style={widgetStyles.daysLabel}>
+                        <Text style={[widgetStyles.daysNumber, { color: theme.text }]}>
+                            {daysLeft}
+                        </Text>
+                        <Text style={[widgetStyles.daysLabel, { color: theme.textSecondary }]}>
                             {daysLeft === 1 ? ' DAY' : ' DAYS'}
                         </Text>
                     </View>
 
                     {/* Event title */}
-                    <Text style={widgetStyles.eventTitle} numberOfLines={1}>
+                    <Text
+                        style={[widgetStyles.eventTitle, { color: theme.text }]}
+                        numberOfLines={1}
+                    >
                         {eventTitle}
                     </Text>
 
                     {/* Event date */}
-                    <Text style={widgetStyles.eventDate}>{eventDate}</Text>
+                    <Text style={[widgetStyles.eventDate, { color: theme.textSecondary }]}>
+                        {eventDate}
+                    </Text>
                 </>
             ) : (
                 <>
-                    <Text style={widgetStyles.noEvents}>No upcoming events</Text>
-                    <Text style={widgetStyles.tapToAdd}>Tap to add one</Text>
+                    <Text style={widgetStyles.emptyIcon}>📅</Text>
+                    <Text style={[widgetStyles.noEvents, { color: theme.text }]}>
+                        No upcoming events
+                    </Text>
+                    <Text style={[widgetStyles.tapToAdd, { color: theme.textSecondary }]}>
+                        Tap to add one
+                    </Text>
                 </>
             )}
         </View>
@@ -60,11 +98,14 @@ function WidgetPreview({
 export default function WidgetPreviewScreen() {
     const router = useRouter();
     const { events } = useEvents();
+    const { colorScheme } = useTheme();
     const [previewData, setPreviewData] = useState({
         title: 'No upcoming events',
         daysLeft: 0,
         dateStr: '',
     });
+
+    const isDark = colorScheme === 'dark';
 
     useEffect(() => {
         // Find the next upcoming event
@@ -92,61 +133,100 @@ export default function WidgetPreviewScreen() {
     }, [events]);
 
     return (
-        <SafeAreaView style={styles.container}>
-            <StatusBar barStyle="dark-content" backgroundColor="#f5f5f7" />
+        <SafeAreaView style={[styles.container, { backgroundColor: isDark ? '#151718' : '#f5f5f7' }]}>
+            <StatusBar
+                barStyle={isDark ? 'light-content' : 'dark-content'}
+                backgroundColor={isDark ? '#151718' : '#f5f5f7'}
+            />
 
             {/* Header */}
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                    <Ionicons name="arrow-back" size={24} color="#000" />
+            <View style={[styles.header, { borderBottomColor: isDark ? '#333' : '#e0e0e0' }]}>
+                <TouchableOpacity
+                    onPress={() => router.back()}
+                    style={[styles.backButton, { backgroundColor: isDark ? '#333' : '#fff' }]}
+                >
+                    <Ionicons name="arrow-back" size={24} color={isDark ? '#fff' : '#000'} />
                 </TouchableOpacity>
-                <Text style={styles.title}>Widget Preview</Text>
+                <Text style={[styles.title, { color: isDark ? '#fff' : '#000' }]}>
+                    Widget Preview
+                </Text>
                 <View style={styles.placeholder} />
             </View>
 
             <ScrollView style={styles.content}>
                 {/* Info */}
-                <View style={styles.infoSection}>
-                    <Ionicons name="information-circle" size={24} color="#6c63ff" />
-                    <Text style={styles.infoText}>
-                        This is a preview of how your home screen widget will look. The actual
-                        widget requires a production build to test.
+                <View style={[styles.infoSection, { backgroundColor: isDark ? '#1c1c1e' : '#e8e6ff' }]}>
+                    <Ionicons name="information-circle" size={24} color={isDark ? '#9BA1A6' : '#6c63ff'} />
+                    <Text style={[styles.infoText, { color: isDark ? '#9BA1A6' : '#333' }]}>
+                        This is a preview of how your home screen widget will look.
+                        The widget matches your current theme.
                     </Text>
                 </View>
 
-                {/* Widget Preview with Data */}
-                <Text style={styles.sectionTitle}>With Upcoming Event</Text>
+                {/* Light Theme Widget */}
+                <Text style={[styles.sectionTitle, { color: isDark ? '#fff' : '#333' }]}>
+                    Light Theme
+                </Text>
                 <View style={styles.widgetWrapper}>
                     <WidgetPreview
                         eventTitle={previewData.title !== 'No upcoming events' ? previewData.title : "Kate's Birthday"}
                         daysLeft={previewData.daysLeft || 28}
                         eventDate={previewData.dateStr || 'Sat, Feb 14'}
+                        isDarkMode={false}
                     />
                 </View>
 
-                {/* Widget Preview Empty State */}
-                <Text style={styles.sectionTitle}>Empty State</Text>
+                {/* Dark Theme Widget */}
+                <Text style={[styles.sectionTitle, { color: isDark ? '#fff' : '#333' }]}>
+                    Dark Theme
+                </Text>
                 <View style={styles.widgetWrapper}>
-                    <WidgetPreview />
+                    <WidgetPreview
+                        eventTitle={previewData.title !== 'No upcoming events' ? previewData.title : "Kate's Birthday"}
+                        daysLeft={previewData.daysLeft || 28}
+                        eventDate={previewData.dateStr || 'Sat, Feb 14'}
+                        isDarkMode={true}
+                    />
                 </View>
 
-                {/* Widget Sizes */}
-                <Text style={styles.sectionTitle}>Small Widget (2x1)</Text>
+                {/* Empty State */}
+                <Text style={[styles.sectionTitle, { color: isDark ? '#fff' : '#333' }]}>
+                    Empty State
+                </Text>
+                <View style={styles.widgetWrapper}>
+                    <WidgetPreview isDarkMode={isDark} />
+                </View>
+
+                {/* Small Widget */}
+                <Text style={[styles.sectionTitle, { color: isDark ? '#fff' : '#333' }]}>
+                    Small Widget (2x1)
+                </Text>
                 <View style={[styles.widgetWrapper, { width: 180, height: 110 }]}>
                     <WidgetPreview
                         eventTitle="Birthday"
                         daysLeft={5}
                         eventDate="Mon, Jan 20"
+                        isDarkMode={isDark}
                     />
                 </View>
 
                 {/* Instructions */}
-                <View style={styles.instructionsSection}>
-                    <Text style={styles.instructionsTitle}>How to add widget on Android:</Text>
-                    <Text style={styles.instruction}>1. Long press on home screen</Text>
-                    <Text style={styles.instruction}>2. Select "Widgets"</Text>
-                    <Text style={styles.instruction}>3. Find "Chrono"</Text>
-                    <Text style={styles.instruction}>4. Drag "Countdown Widget" to home</Text>
+                <View style={[styles.instructionsSection, { backgroundColor: isDark ? '#1c1c1e' : '#fff' }]}>
+                    <Text style={[styles.instructionsTitle, { color: isDark ? '#fff' : '#333' }]}>
+                        How to add widget on Android:
+                    </Text>
+                    <Text style={[styles.instruction, { color: isDark ? '#9BA1A6' : '#666' }]}>
+                        1. Long press on home screen
+                    </Text>
+                    <Text style={[styles.instruction, { color: isDark ? '#9BA1A6' : '#666' }]}>
+                        2. Select "Widgets"
+                    </Text>
+                    <Text style={[styles.instruction, { color: isDark ? '#9BA1A6' : '#666' }]}>
+                        3. Find "Chrono"
+                    </Text>
+                    <Text style={[styles.instruction, { color: isDark ? '#9BA1A6' : '#666' }]}>
+                        4. Drag "Countdown Widget" to home
+                    </Text>
                 </View>
             </ScrollView>
         </SafeAreaView>
@@ -155,59 +235,61 @@ export default function WidgetPreviewScreen() {
 
 const widgetStyles = StyleSheet.create({
     container: {
-        backgroundColor: '#1a1a2e',
-        borderRadius: 24,
+        borderRadius: 28,
         padding: 16,
         alignItems: 'center',
         justifyContent: 'center',
         width: '100%',
         height: '100%',
     },
+    appBadge: {
+        paddingHorizontal: 12,
+        paddingVertical: 4,
+        borderRadius: 12,
+        marginBottom: 12,
+    },
     appName: {
-        fontSize: 12,
-        fontWeight: '600',
-        color: '#6c63ff',
-        letterSpacing: 2,
-        marginBottom: 8,
+        fontSize: 10,
+        fontWeight: '700',
+        letterSpacing: 1,
     },
     countdownRow: {
         flexDirection: 'row',
         alignItems: 'flex-end',
-        marginBottom: 4,
+        marginBottom: 8,
     },
     daysNumber: {
-        fontSize: 48,
+        fontSize: 56,
         fontWeight: 'bold',
-        color: '#ffffff',
     },
     daysLabel: {
-        fontSize: 16,
+        fontSize: 14,
         fontWeight: '600',
-        color: '#888888',
         marginLeft: 4,
-        marginBottom: 8,
+        marginBottom: 10,
     },
     eventTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#ffffff',
         textAlign: 'center',
         marginBottom: 4,
     },
     eventDate: {
-        fontSize: 12,
-        color: '#888888',
+        fontSize: 13,
         textAlign: 'center',
+    },
+    emptyIcon: {
+        fontSize: 32,
+        marginBottom: 8,
     },
     noEvents: {
         fontSize: 16,
-        color: '#888888',
+        fontWeight: '600',
         textAlign: 'center',
-        marginBottom: 8,
+        marginBottom: 4,
     },
     tapToAdd: {
-        fontSize: 14,
-        color: '#6c63ff',
+        fontSize: 13,
         textAlign: 'center',
     },
 });
@@ -215,7 +297,6 @@ const widgetStyles = StyleSheet.create({
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#f5f5f7',
     },
     header: {
         flexDirection: 'row',
@@ -224,20 +305,17 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingVertical: 16,
         borderBottomWidth: 1,
-        borderBottomColor: '#e0e0e0',
     },
     backButton: {
         width: 40,
         height: 40,
         borderRadius: 20,
-        backgroundColor: '#fff',
         justifyContent: 'center',
         alignItems: 'center',
     },
     title: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: '#000',
     },
     placeholder: {
         width: 40,
@@ -248,7 +326,6 @@ const styles = StyleSheet.create({
     },
     infoSection: {
         flexDirection: 'row',
-        backgroundColor: '#e8e6ff',
         borderRadius: 12,
         padding: 16,
         marginBottom: 24,
@@ -258,20 +335,18 @@ const styles = StyleSheet.create({
     infoText: {
         flex: 1,
         fontSize: 14,
-        color: '#333',
         lineHeight: 20,
     },
     sectionTitle: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#333',
         marginBottom: 12,
     },
     widgetWrapper: {
         width: 280,
-        height: 160,
+        height: 170,
         marginBottom: 24,
-        borderRadius: 24,
+        borderRadius: 28,
         overflow: 'hidden',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
@@ -280,7 +355,6 @@ const styles = StyleSheet.create({
         elevation: 5,
     },
     instructionsSection: {
-        backgroundColor: '#fff',
         borderRadius: 16,
         padding: 20,
         marginBottom: 40,
@@ -288,12 +362,10 @@ const styles = StyleSheet.create({
     instructionsTitle: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#333',
         marginBottom: 12,
     },
     instruction: {
         fontSize: 14,
-        color: '#666',
         marginBottom: 8,
         paddingLeft: 8,
     },
