@@ -5,12 +5,33 @@ import { UpcomingEventWidget } from './UpcomingEventWidget';
 
 const WIDGET_NAME = 'UpcomingEventWidget';
 
-// Calculate days between two dates
-function getDaysLeft(eventDate: Date): number {
+// Calculate detailed time left
+function getTimeLeft(eventDate: Date): { months: number; days: number; totalDays: number } {
     const now = new Date();
-    const diffTime = eventDate.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return Math.max(0, diffDays);
+    // Normalize to start of day for cleaner calculation
+    now.setHours(0, 0, 0, 0);
+    const target = new Date(eventDate);
+    target.setHours(0, 0, 0, 0);
+
+    const diffTime = target.getTime() - now.getTime();
+    const totalDays = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+
+    // Calculate months and days
+    let months = (target.getFullYear() - now.getFullYear()) * 12 + (target.getMonth() - now.getMonth());
+    let days = target.getDate() - now.getDate();
+
+    if (days < 0) {
+        months--;
+        // Get days in previous month
+        const prevMonth = new Date(target.getFullYear(), target.getMonth(), 0);
+        days += prevMonth.getDate();
+    }
+
+    return {
+        months: Math.max(0, months),
+        days: Math.max(0, days),
+        totalDays
+    };
 }
 
 // Format date for display
@@ -25,7 +46,7 @@ function formatDate(date: Date): string {
 // Fetch the next upcoming event from storage
 async function getUpcomingEvent(): Promise<{
     title: string;
-    daysLeft: number;
+    timeLeft: { months: number; days: number; totalDays: number };
     dateStr: string;
 } | null> {
     try {
@@ -49,7 +70,7 @@ async function getUpcomingEvent(): Promise<{
 
         return {
             title: nextEvent.title,
-            daysLeft: getDaysLeft(eventDate),
+            timeLeft: getTimeLeft(eventDate),
             dateStr: formatDate(eventDate),
         };
     } catch (error) {
@@ -74,7 +95,8 @@ export async function widgetTaskHandler(props: WidgetTaskHandlerProps) {
                 Widget(
                     <UpcomingEventWidget
                         eventTitle={eventData.title}
-                        daysLeft={eventData.daysLeft}
+                        monthsLeft={eventData.timeLeft.months}
+                        daysLeft={eventData.timeLeft.days}
                         eventDate={eventData.dateStr}
                     />
                 );

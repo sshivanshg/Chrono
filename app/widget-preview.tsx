@@ -34,37 +34,55 @@ const WidgetTheme = {
 // Widget Preview Component (mimics the actual widget appearance)
 function WidgetPreview({
     eventTitle = 'No upcoming events',
+    monthsLeft = 0,
     daysLeft = 0,
     eventDate = '',
     isDarkMode = false,
 }: {
     eventTitle?: string;
+    monthsLeft?: number;
     daysLeft?: number;
     eventDate?: string;
     isDarkMode?: boolean;
 }) {
     const hasEvent = eventTitle !== 'No upcoming events';
     const theme = isDarkMode ? WidgetTheme.dark : WidgetTheme.light;
+    const showMonths = monthsLeft > 0;
 
     return (
         <View style={[widgetStyles.container, { backgroundColor: theme.cardBackground }]}>
-            {/* App name badge */}
-            <View style={[widgetStyles.appBadge, { backgroundColor: theme.accent }]}>
-                <Text style={[widgetStyles.appName, { color: isDarkMode ? '#000' : '#fff' }]}>
-                    CHRONO
-                </Text>
-            </View>
-
             {hasEvent ? (
                 <>
-                    {/* Days countdown */}
+                    {/* Countdown Display */}
                     <View style={widgetStyles.countdownRow}>
-                        <Text style={[widgetStyles.daysNumber, { color: theme.text }]}>
-                            {daysLeft}
-                        </Text>
-                        <Text style={[widgetStyles.daysLabel, { color: theme.textSecondary }]}>
-                            {daysLeft === 1 ? ' DAY' : ' DAYS'}
-                        </Text>
+                        {showMonths ? (
+                            <>
+                                {/* Months */}
+                                <Text style={[widgetStyles.daysNumber, { color: theme.text }]}>
+                                    {monthsLeft}
+                                </Text>
+                                <Text style={[widgetStyles.daysLabel, { color: theme.textSecondary, marginRight: 8 }]}>
+                                    {monthsLeft === 1 ? ' MO' : ' MOS'}
+                                </Text>
+                                {/* Days */}
+                                <Text style={[widgetStyles.daysNumber, { color: theme.text }]}>
+                                    {daysLeft}
+                                </Text>
+                                <Text style={[widgetStyles.daysLabel, { color: theme.textSecondary }]}>
+                                    {daysLeft === 1 ? ' DAY' : ' DAYS'}
+                                </Text>
+                            </>
+                        ) : (
+                            <>
+                                {/* Just Days */}
+                                <Text style={[widgetStyles.daysNumber, { color: theme.text, fontSize: 56 }]}>
+                                    {daysLeft}
+                                </Text>
+                                <Text style={[widgetStyles.daysLabel, { color: theme.textSecondary }]}>
+                                    {daysLeft === 1 ? ' DAY' : ' DAYS'}
+                                </Text>
+                            </>
+                        )}
                     </View>
 
                     {/* Event title */}
@@ -101,6 +119,7 @@ export default function WidgetPreviewScreen() {
     const { colorScheme } = useTheme();
     const [previewData, setPreviewData] = useState({
         title: 'No upcoming events',
+        monthsLeft: 0,
         daysLeft: 0,
         dateStr: '',
     });
@@ -110,20 +129,32 @@ export default function WidgetPreviewScreen() {
     useEffect(() => {
         // Find the next upcoming event
         const now = new Date();
+        now.setHours(0, 0, 0, 0);
+
         const upcomingEvents = events
             .filter((event) => new Date(event.date) > now)
             .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
         if (upcomingEvents.length > 0) {
             const nextEvent = upcomingEvents[0];
-            const eventDate = new Date(nextEvent.date);
-            const diffTime = eventDate.getTime() - now.getTime();
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            const target = new Date(nextEvent.date);
+            target.setHours(0, 0, 0, 0);
+
+            // Calculate months and days
+            let months = (target.getFullYear() - now.getFullYear()) * 12 + (target.getMonth() - now.getMonth());
+            let days = target.getDate() - now.getDate();
+
+            if (days < 0) {
+                months--;
+                const prevMonth = new Date(target.getFullYear(), target.getMonth(), 0);
+                days += prevMonth.getDate();
+            }
 
             setPreviewData({
                 title: nextEvent.title,
-                daysLeft: Math.max(0, diffDays),
-                dateStr: eventDate.toLocaleDateString('en-US', {
+                monthsLeft: Math.max(0, months),
+                daysLeft: Math.max(0, days),
+                dateStr: target.toLocaleDateString('en-US', {
                     weekday: 'short',
                     month: 'short',
                     day: 'numeric',

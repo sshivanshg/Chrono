@@ -1,8 +1,7 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { Stack, useRouter, useSegments } from 'expo-router';
+import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import { ActivityIndicator, Platform, View } from 'react-native';
+import { Platform } from 'react-native';
 import 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -13,7 +12,7 @@ if (Platform.OS === 'android') {
 
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
-import { AuthProvider, useAuth } from '../contexts/AuthContext';
+import { AuthProvider } from '../contexts/AuthContext';
 import { EventProvider } from '../contexts/EventContext';
 import { ThemeProvider as ThemeContextProvider } from '../contexts/ThemeContext';
 
@@ -28,36 +27,32 @@ export const unstable_settings = {
 
 function AppContent() {
   const colorScheme = useColorScheme();
-  const { isSignedIn, loading } = useAuth();
   const insets = useSafeAreaInsets();
-  const segments = useSegments();
-  const router = useRouter();
 
-  useEffect(() => {
-    if (loading) return;
+  // Auth bypass - go directly to main page
+  // To re-enable auth, uncomment the useEffect below and the loading check
 
-    const inSignInGroup = segments[0] === 'signin';
-
-    if (!isSignedIn && !inSignInGroup) {
-      router.replace('/signin');
-    } else if (isSignedIn && inSignInGroup) {
-      router.replace('/(tabs)');
-    }
-  }, [isSignedIn, segments, loading]);
-
+  // const { isSignedIn, loading } = useAuth();
+  // const segments = useSegments();
+  // const router = useRouter();
+  //
   // useEffect(() => {
-  //   if (!loading) {
-  //     SplashScreen.hideAsync();
+  //   if (loading) return;
+  //   const inSignInGroup = segments[0] === 'signin';
+  //   if (!isSignedIn && !inSignInGroup) {
+  //     router.replace('/signin');
+  //   } else if (isSignedIn && inSignInGroup) {
+  //     router.replace('/(tabs)');
   //   }
-  // }, [loading]);
-
-  if (loading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#ffffff' }}>
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>
-    );
-  }
+  // }, [isSignedIn, segments, loading]);
+  //
+  // if (loading) {
+  //   return (
+  //     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#ffffff' }}>
+  //       <ActivityIndicator size="large" color="#0000ff" />
+  //     </View>
+  //   );
+  // }
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>

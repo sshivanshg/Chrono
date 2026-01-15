@@ -25,6 +25,7 @@ const WidgetTheme = {
 
 interface UpcomingEventWidgetProps {
     eventTitle?: string;
+    monthsLeft?: number;
     daysLeft?: number;
     eventDate?: string;
     isDarkMode?: boolean;
@@ -32,12 +33,16 @@ interface UpcomingEventWidgetProps {
 
 export function UpcomingEventWidget({
     eventTitle = 'No upcoming events',
+    monthsLeft = 0,
     daysLeft = 0,
     eventDate = '',
     isDarkMode = false,
 }: UpcomingEventWidgetProps) {
     const hasEvent = eventTitle !== 'No upcoming events';
     const theme = isDarkMode ? WidgetTheme.dark : WidgetTheme.light;
+
+    // Logic to determine what to show
+    const showMonths = monthsLeft > 0;
 
     return (
         <FlexWidget
@@ -47,35 +52,14 @@ export function UpcomingEventWidget({
                 flexDirection: 'column',
                 justifyContent: 'center',
                 alignItems: 'center',
-                backgroundColor: theme.cardBackground,
+                backgroundColor: theme.cardBackground as any,
                 borderRadius: 28,
                 padding: 16,
             }}
         >
-            {/* App name badge */}
-            <FlexWidget
-                style={{
-                    backgroundColor: theme.accent,
-                    paddingHorizontal: 12,
-                    paddingVertical: 4,
-                    borderRadius: 12,
-                    marginBottom: 12,
-                }}
-            >
-                <TextWidget
-                    text="CHRONO"
-                    style={{
-                        fontSize: 10,
-                        fontWeight: '700',
-                        color: isDarkMode ? '#000000' : '#ffffff',
-                        letterSpacing: 1,
-                    }}
-                />
-            </FlexWidget>
-
             {hasEvent ? (
                 <>
-                    {/* Days countdown - large number */}
+                    {/* Countdown Display */}
                     <FlexWidget
                         style={{
                             flexDirection: 'row',
@@ -83,24 +67,68 @@ export function UpcomingEventWidget({
                             marginBottom: 8,
                         }}
                     >
-                        <TextWidget
-                            text={String(daysLeft)}
-                            style={{
-                                fontSize: 56,
-                                fontWeight: 'bold',
-                                color: theme.text,
-                            }}
-                        />
-                        <TextWidget
-                            text={daysLeft === 1 ? ' DAY' : ' DAYS'}
-                            style={{
-                                fontSize: 14,
-                                fontWeight: '600',
-                                color: theme.textSecondary,
-                                marginLeft: 4,
-                                marginBottom: 10,
-                            }}
-                        />
+                        {showMonths ? (
+                            <>
+                                {/* Months */}
+                                <TextWidget
+                                    text={String(monthsLeft)}
+                                    style={{
+                                        fontSize: 48,
+                                        fontWeight: 'bold',
+                                        color: theme.text as any,
+                                    }}
+                                />
+                                <TextWidget
+                                    text={monthsLeft === 1 ? ' MO' : ' MOS'}
+                                    style={{
+                                        fontSize: 16,
+                                        fontWeight: '600',
+                                        color: theme.textSecondary as any,
+                                        marginLeft: 2,
+                                        marginRight: 8,
+                                    }}
+                                />
+                                {/* Days (remainder) */}
+                                <TextWidget
+                                    text={String(daysLeft)}
+                                    style={{
+                                        fontSize: 48,
+                                        fontWeight: 'bold',
+                                        color: theme.text as any,
+                                    }}
+                                />
+                                <TextWidget
+                                    text={daysLeft === 1 ? ' DAY' : ' DAYS'}
+                                    style={{
+                                        fontSize: 16,
+                                        fontWeight: '600',
+                                        color: theme.textSecondary as any,
+                                        marginLeft: 2,
+                                    }}
+                                />
+                            </>
+                        ) : (
+                            <>
+                                {/* Just Days */}
+                                <TextWidget
+                                    text={String(daysLeft)}
+                                    style={{
+                                        fontSize: 56,
+                                        fontWeight: 'bold',
+                                        color: theme.text as any,
+                                    }}
+                                />
+                                <TextWidget
+                                    text={daysLeft === 1 ? ' DAY' : ' DAYS'}
+                                    style={{
+                                        fontSize: 16,
+                                        fontWeight: '600',
+                                        color: theme.textSecondary as any,
+                                        marginLeft: 4,
+                                    }}
+                                />
+                            </>
+                        )}
                     </FlexWidget>
 
                     {/* Event title */}
@@ -109,7 +137,7 @@ export function UpcomingEventWidget({
                         style={{
                             fontSize: 18,
                             fontWeight: 'bold',
-                            color: theme.text,
+                            color: theme.text as any,
                             textAlign: 'center',
                             marginBottom: 4,
                         }}
@@ -122,7 +150,7 @@ export function UpcomingEventWidget({
                         text={eventDate}
                         style={{
                             fontSize: 13,
-                            color: theme.textSecondary,
+                            color: theme.textSecondary as any,
                             textAlign: 'center',
                         }}
                     />
@@ -144,7 +172,7 @@ export function UpcomingEventWidget({
                         style={{
                             fontSize: 16,
                             fontWeight: '600',
-                            color: theme.text,
+                            color: theme.text as any,
                             textAlign: 'center',
                             marginBottom: 4,
                         }}
@@ -153,7 +181,7 @@ export function UpcomingEventWidget({
                         text="Tap to add one"
                         style={{
                             fontSize: 13,
-                            color: theme.textSecondary,
+                            color: theme.textSecondary as any,
                             textAlign: 'center',
                         }}
                     />
